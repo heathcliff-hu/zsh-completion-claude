@@ -80,7 +80,7 @@ _claude_agents() {
     '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
     '--json[print live sessions as JSON array and exit]' \
     '--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
-    '--model[default model for dispatched sessions]:model: ' \
+    '--model[default model for dispatched sessions]:model:_claude_models' \
     '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)' \
     '--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_files' \
     '--setting-sources[comma-separated setting sources]:sources:(user project local)' \
@@ -92,6 +92,34 @@ _claude_auth() {
   _arguments \
     '-h[display help]' \
     '--help[display help]'
+}
+
+# --- model candidates --------------------------------------------------------
+# Resolves model aliases from settings files (highest priority wins):
+#   .claude/settings.local.json > .claude/settings.json > ~/.claude/settings.json
+_claude_models() {
+  local f sonnet_m opus_m haiku_m default_m
+  local sonnet_s opus_s haiku_s default_s
+
+  for f in .claude/settings.local.json .claude/settings.json ~/.claude/settings.json; do
+    [[ -f $f ]] || continue
+
+    [[ -z $sonnet_m ]] && sonnet_m=$(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL // .env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME // empty' "$f" 2>/dev/null) && [[ -n $sonnet_m ]] && sonnet_s=${f/$HOME/~}
+    [[ -z $opus_m ]]   && opus_m=$(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL // .env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME // empty' "$f" 2>/dev/null)     && [[ -n $opus_m ]]   && opus_s=${f/$HOME/~}
+    [[ -z $haiku_m ]]  && haiku_m=$(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null) && [[ -n $haiku_m ]]  && haiku_s=${f/$HOME/~}
+    [[ -z $default_m ]] && default_m=$(jq -r '.env.ANTHROPIC_MODEL // empty' "$f" 2>/dev/null) && [[ -n $default_m ]] && default_s=${f/$HOME/~}
+  done
+
+  local -a models
+  [[ -n $sonnet_m ]]  && models+=("sonnet:${sonnet_m} — ${sonnet_s}")
+  [[ -n $opus_m ]]    && models+=("opus:${opus_m} — ${opus_s}")
+  [[ -n $haiku_m ]]   && models+=("haiku:${haiku_m} — ${haiku_s}")
+  [[ -n $default_m ]] && models+=("${default_m}:default (${default_s})")
+
+  # fallback to bare aliases if nothing resolved
+  [[ ${#models} -eq 0 ]] && models=('sonnet:Sonnet model' 'opus:Opus model' 'haiku:Haiku model')
+
+  _describe 'model' models
 }
 
 _claude() {
@@ -111,9 +139,9 @@ _claude() {
     '--no-session-persistence[disable session persistence (--print only)]'
 
     # Model / effort
-    '--model[model for current session]:model: '
+    '--model[model for current session]:model:_claude_models'
     '--effort[effort level for current session]:level:(low medium high xhigh max)'
-    '--fallback-model[enable fallback to specified model(s)]:model: '
+    '--fallback-model[enable fallback to specified model(s)]:model:_claude_models'
     '--max-budget-usd[max dollar amount for API calls (--print only)]:amount: '
 
     # Input / output format
