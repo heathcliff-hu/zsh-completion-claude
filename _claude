@@ -18,12 +18,12 @@ _claude_cmd() {
     'install:install Claude Code native build'
     'mcp:configure and manage MCP servers'
     'plugin:manage Claude Code plugins'
-    'plugins:manage Claude Code plugins (alias)'
+    'plugins:manage Claude Code plugins'
     'project:manage Claude Code project state'
     'setup-token:set up long-lived authentication token'
     'ultrareview:run cloud-hosted multi-agent code review'
     'update:check for updates and install'
-    'upgrade:check for updates and install (alias)'
+    'upgrade:check for updates and install'
   )
   _describe -t commands 'claude command' commands
 }
