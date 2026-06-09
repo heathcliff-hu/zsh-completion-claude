@@ -4,7 +4,7 @@
 
 ## 安装
 
-```zsh
+```shell
 # 克隆到 fpath 目录
 git clone https://github.com/heathcliff-hu/zsh-completion-claude.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completion-claude
 
@@ -12,6 +12,17 @@ git clone https://github.com/heathcliff-hu/zsh-completion-claude.git ${ZSH_CUSTO
 fpath=(/path/to/zsh-completion-claude $fpath)
 autoload -U _claude
 compdef _claude claude
+
+# 如果需要缓存清理命令，需在 .zshrc 中添加以下内容
+claude() {
+  if [[ "$1" == "mcp" && "$2" == "cache-clear" ]]; then
+    local cache_file=${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zsh_claude_mcp_servers
+    rm -f -- "$cache_file"
+    print "Cleared Claude MCP completion cache: $cache_file"
+    return 0
+  fi
+  command claude "$@"
+}
 ```
 
 ## 补全覆盖
@@ -43,9 +54,28 @@ compdef _claude claude
 - **已安装插件** — 执行 `claude plugin list`
 - **已配置市场** — 执行 `claude plugin marketplace list`
 
+### 缓存清理
+
+`claude mcp cache-clear` 用于清除 MCP 服务器列表补全缓存。由于补全在 zsh 进程中执行，无法直接删除文件，需要 shell 包装拦截命令：
+
+```shell
+# 添加到 ~/.zshrc
+claude() {
+  if [[ "$1" == "mcp" && "$2" == "cache-clear" ]]; then
+    local cache_file=${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zsh_claude_mcp_servers
+    rm -f -- "$cache_file"
+    print "Cleared Claude MCP completion cache: $cache_file"
+    return 0
+  fi
+  command claude "$@"
+}
+```
+
+> `$ZSH_CACHE_DIR` 默认为 `~/.cache/zsh`（oh-my-zsh 自动创建），未使用 oh-my-zsh 时可能不存在，需要先 `mkdir -p`。
+
 ## 开发
 
-```zsh
+```shell
 # 语法检查
 zsh -n _claude
 
@@ -58,7 +88,7 @@ rm -f ~/.zcompdump* _claude.zwc && zcompile _claude && exec zsh
 ## 文件结构
 
 ```shell
-_claude          # 单一补全文件（601 行，30 个函数）
+_claude          # 单一补全文件（617 行，30 个函数）
 CLAUDE.md        # Claude Code 项目上下文
 README.md        # 本文件
 ```

@@ -47,6 +47,7 @@ _claude_mcp_cmds() {
     'remove:remove an MCP server'
     'reset-project-choices:reset approved and rejected project-scoped MCP servers'
     'serve:start the Claude Code MCP server'
+    'cache-clear:clear cached MCP server list for completion'
   )
   _describe 'mcp command' subcmds
 }
@@ -128,6 +129,20 @@ _claude_mcp_serve() {
   '--help[display help]'
 }
 
+_claude_mcp_cache_clear() {
+  # 将下面的代码复制到 ~/.zshrc 中，以便在运行 `claude mcp cache-clear` 时清除 MCP 服务器列表的缓存
+  # claude() {
+  #   if [[ "$1" == "mcp" && "$2" == "cache-clear" ]]; then
+  #     local cache_file=$ZSH_CACHE_DIR/zsh_claude_mcp_servers
+  #     rm -f -- "$cache_file"
+  #     print "Cleared Claude MCP completion cache: $cache_file"
+  #     return 0
+  #   fi
+  #
+  #   command claude "$@"
+  # }
+}
+
 _claude_mcp() {
   local curcontext="$curcontext" state line
   typeset -A opt_args
@@ -148,6 +163,7 @@ _claude_mcp() {
         remove)   _claude_mcp_remove "$@" && return ;;
         add-from-claude-desktop) _claude_mcp_add_from_claude_desktop "$@" && return ;;
         serve)    _claude_mcp_serve "$@" && return ;;
+        cache-clear)    _claude_mcp_cache_clear && return ;;
         *)        _normal && return ;;
       esac
     ;;
