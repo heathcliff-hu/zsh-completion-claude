@@ -8,6 +8,9 @@
 # 克隆到 fpath 目录
 git clone https://github.com/heathcliff-hu/zsh-completion-claude.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completion-claude
 
+# 并在 .zshrc 中启用
+plugins=(... zsh-completion-claude)
+
 # 或在 .zshrc 中添加
 fpath=(/path/to/zsh-completion-claude $fpath)
 autoload -U _claude
