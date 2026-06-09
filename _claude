@@ -614,6 +614,8 @@ _claude_resume() {
 
   local -a sessions
   sessions=(${(f)"$(
+    zmodload -F zsh/stat b:zstat 2>/dev/null
+    zmodload -F zsh/datetime b:strftime 2>/dev/null
     for f in $dir/*.jsonl(N); do
       ts=$(zstat -F %s +mtime "$f" 2>/dev/null) || continue
       id=${f:t:r}

@@ -22,6 +22,11 @@ rm -f ~/.zcompdump* _claude.zwc && zcompile _claude && exec zsh   # 部署
 - `_arguments` message 中的 `:` 必须转义为 `\:`，否则被解析为 spec 分隔符导致 `parse error near ')'`
 - **_arguments ACTION 函数不可包装中间层** — `_arguments '1: :_wrapper'` 中 `_wrapper` 直接调 `_describe`，不能委托给另一函数：`_wrapper() { _helper 'tag' items }` 会导致补全失效。补全逻辑必须直接在 ACTION 函数中内联
 
+## 跨平台兼容
+
+- `stat -f '%m'` 是 BSD 专属，Linux 用 `stat -c '%Y'`；跨平台方案用 zsh 内置 `zstat -F %s +mtime`
+- `date -r $ts` 是 BSD 专属，Linux 用 `date -d @$ts`；跨平台方案用 zsh 内置 `strftime`
+
 ## jq 查询 settings 文件
 
 ```bash
