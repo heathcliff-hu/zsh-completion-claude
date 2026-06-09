@@ -43,7 +43,6 @@ _claude_mcp_cmds() {
     'add-from-claude-desktop:import MCP servers from Claude Desktop'
     'add-json:add an MCP server with a JSON string'
     'get:get details about an MCP server'
-    'help:display help for command'
     'list:list configured MCP servers'
     'remove:remove an MCP server'
     'reset-project-choices:reset approved and rejected project-scoped MCP servers'
@@ -55,18 +54,18 @@ _claude_mcp_cmds() {
 _claude_mcp_servers() {
   local -a items
   local cache_file=$ZSH_CACHE_DIR/zsh_claude_mcp_servers
-
+  
   # cache with 1h TTL: line1 = epoch, rest = server names
   if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
     items=(${(f)"$(tail -n +2 $cache_file)"})
   else
-  	items=("${(@f)$(claude mcp list 2>/dev/null | grep ':')}")
+    items=("${(@f)$(claude mcp list 2>/dev/null | grep ':')}")
     if [[ ${#items} -gt 0 ]]; then
       # shellcheck disable=SC1073 disable=SC1056 disable=SC1072 disable=SC1083
       { date +%s; print -l -- $items } > $cache_file
     fi
   fi
-
+  
   [[ ${#items} -eq 0 ]] && return 1
   _describe 'server' items
 }
@@ -86,23 +85,70 @@ _claude_mcp_remove() {
   '1:server name:_claude_mcp_servers'
 }
 
+_claude_mcp_add() {
+  _arguments \
+  '--callback-port[fixed port for OAuth callback]:port:_numbers' \
+  '--client-id[OAuth client ID for HTTP/SSE servers]:client id' \
+  '--client-secret[prompt for OAuth client secret]' \
+  '*-e[set environment variables]:env (KEY=value)' \
+  '*--env[set environment variables]:env (KEY=value)' \
+  '*-H[set websocket headers]:header' \
+  '*--header[set websocket headers]:header' \
+  '-h[display help]' \
+  '--help[display help]' \
+  '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)' \
+  '(-t --transport)'{-t,--transport}'[transport type]:transport:(stdio sse http)' \
+  '1:server name' \
+  '2:command or URL' \
+  '*:additional arguments'
+}
+
+_claude_mcp_add_json() {
+  _arguments \
+  '--client-secret[prompt for OAuth client secret]' \
+  '-h[display help]' \
+  '--help[display help]' \
+  '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)' \
+  '1:server name' \
+  '2:json string'
+}
+
+_claude_mcp_add_from_claude_desktop() {
+  _arguments \
+  '-h[display help]' \
+  '--help[display help]' \
+  '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)'
+}
+
+_claude_mcp_serve() {
+  _arguments \
+  '(-d --debug)'{-d,--debug}'[enable debug mode]' \
+  '--verbose[override verbose mode setting from config]' \
+  '-h[display help]' \
+  '--help[display help]'
+}
+
 _claude_mcp() {
   local curcontext="$curcontext" state line
   typeset -A opt_args
-
+  
   _arguments -C \
   '-h[display help]' \
   '--help[display help]' \
   '1: :_claude_mcp_cmds' \
   '*:: :->subargs' \
   && return
-
+  
   case "$state" in
     subargs)
       case "$line[1]" in
-        get)    _claude_mcp_get "$@" && return ;;
-        remove) _claude_mcp_remove "$@" && return ;;
-        *)      _normal && return ;;
+        add)      _claude_mcp_add "$@" && return ;;
+        add-json) _claude_mcp_add_json "$@" && return ;;
+        get)      _claude_mcp_get "$@" && return ;;
+        remove)   _claude_mcp_remove "$@" && return ;;
+        add-from-claude-desktop) _claude_mcp_add_from_claude_desktop "$@" && return ;;
+        serve)    _claude_mcp_serve "$@" && return ;;
+        *)        _normal && return ;;
       esac
     ;;
   esac
