@@ -131,3 +131,33 @@ _helper() {
 '--timeout[specify timeout]: :_numbers -u minutes -d 30 timeout'  # 带单位和默认值
 '::timeout (min) [30]:_numbers'                                    # 简写：message 中标注默认值
 ```
+
+## 可重复选项 `*` 前缀
+
+- `--help` 输出中 `...`（如 `<directories...>`）或 `(repeatable)` 标注的选项需加 `*--flag`
+- 例：`'*--add-dir[additional directories]:directory:_directories'`
+
+## 逗号分隔补全
+
+用 `_values -s ,` 在独立辅助函数中实现：
+
+```zsh
+_claude_tool_names() {
+  _values -s , 'tool' \
+    'Bash' 'Read' 'Write' 'Edit' \
+    'Glob' 'Grep' 'WebSearch' 'WebFetch' \
+    'Task' 'TaskCreate' 'TaskUpdate' 'TaskGet' 'TaskList' \
+    'NotebookEdit' 'Agent' 'AskUserQuestion' \
+    'EnterPlanMode' 'ExitPlanMode' 'Skill' \
+    'CronCreate' 'CronDelete' 'CronList' \
+    'ScheduleWakeup' 'Workflow' \
+    'mcp__*'
+}
+```
+
+## 补全对齐检查
+
+以 `claude <cmd> --help` 实际输出为准，逐子命令对比补全代码：
+- 选项缺失 → 补充
+- 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
+- 候选列表不完整 → 对齐 --help 描述
