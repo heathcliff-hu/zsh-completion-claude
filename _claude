@@ -268,9 +268,11 @@ _claude_install() {
 
 _claude_ultrareview() {
   _arguments \
+  '--json[print raw bugs.json payload instead of formatted findings]' \
+  '--timeout[maximum minutes to wait for the review]:minutes [30]:_numbers' \
   '-h[display help]' \
   '--help[display help]' \
-  '1:target:_files'
+  '::target (PR number or base branch): '
 }
 
 _claude_agents() {
