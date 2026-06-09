@@ -191,6 +191,47 @@ _claude_project() {
   esac
 }
 
+_claude_auto_mode_cmds() {
+  local -a subcmds
+  subcmds=(
+    'config:print the effective auto mode config as JSON'
+    'critique:get AI feedback on custom auto mode rules'
+    'defaults:print the default auto mode rules as JSON'
+    'help:display help for command'
+  )
+  _describe 'auto-mode command' subcmds
+}
+
+_claude_auto_mode_critique() {
+  _arguments \
+  '-h[display help]' \
+  '--help[display help]' \
+  '--model[override which model is used]:model:_claude_models'
+}
+
+_claude_auto_mode() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  _arguments -C \
+  '-h[display help]' \
+  '--help[display help]' \
+  '1: :_claude_auto_mode_cmds' \
+  '*:: :->subargs' \
+  && return
+
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        config)    _claude_help_opts "$@" && return ;;
+        critique)  _claude_auto_mode_critique "$@" && return ;;
+        defaults)  _claude_help_opts "$@" && return ;;
+        help)      _claude_help_opts "$@" && return ;;
+      esac
+    ;;
+  esac
+}
+
 _claude_mcp() {
   local curcontext="$curcontext" state line
   typeset -A opt_args
@@ -651,7 +692,7 @@ _claude() {
       case "$line[1]" in
         agents)       _claude_agents "$@" && ret=0 ;;
         auth)         _claude_auth "$@" && ret=0 ;;
-        auto-mode)    _claude_help_opts "$@" && ret=0 ;;
+        auto-mode)    _claude_auto_mode "$@" && ret=0 ;;
         doctor)       _claude_help_opts "$@" && ret=0 ;;
         install)      _claude_install "$@" && ret=0 ;;
         mcp)          _claude_mcp "$@" && ret=0 ;;
