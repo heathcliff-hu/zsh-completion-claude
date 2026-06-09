@@ -416,7 +416,7 @@ _claude_plugin() {
           '(-a --all)'{-a,--all}'[disable all enabled plugins]' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '-h[display help]' '--help[display help]' \
-          '1:plugin name:_claude_plugins' && return
+          '::plugin name:_claude_plugins' && return
         ;;
         enable)
           _arguments \
@@ -426,11 +426,18 @@ _claude_plugin() {
         ;;
         init|new)
           _arguments \
+          '--author[author name]:name: ' \
+          '--author-email[author email]:email:_email_addresses -c' \
+          '--description[manifest description]:text: ' \
+          '(-f --force)'{-f,--force}'[overwrite existing plugin at target]' \
+          '--with[also scaffold components]:components: ' \
           '-h[display help]' '--help[display help]' \
           '1:plugin name: ' && return
         ;;
         install|i)
           _arguments \
+          '*--config[set a userConfig option]:key=value: ' \
+          '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '-h[display help]' '--help[display help]' \
           '1:plugin: ' && return
         ;;
@@ -449,8 +456,13 @@ _claude_plugin() {
         ;;
         tag)
           _arguments \
+          '--dry-run[print what would be tagged without creating]' \
+          '(-f --force)'{-f,--force}'[skip dirty-working-tree and tag-already-exists checks]' \
+          '(-m --message)'{-m,--message}'[tag annotation message (%s for version)]:message: ' \
+          '--push[push the tag to --remote after creating]' \
+          '--remote[remote to push to with --push]:remote [origin]: ' \
           '-h[display help]' '--help[display help]' \
-          '1:path:_files -/' && return
+          '::path:_files -/' && return
         ;;
         uninstall|remove)
           _arguments \
@@ -469,6 +481,7 @@ _claude_plugin() {
         ;;
         validate)
           _arguments \
+          '--strict[treat warnings as errors (for CI)]' \
           '-h[display help]' '--help[display help]' \
           '1:path:_files' && return
         ;;
@@ -527,7 +540,7 @@ _claude_plugin_marketplace() {
         update)
           _arguments \
           '-h[display help]' '--help[display help]' \
-          '1:marketplace name:_claude_marketplaces' && return
+          '::marketplace name (omit for all):_claude_marketplaces' && return
         ;;
       esac
     ;;

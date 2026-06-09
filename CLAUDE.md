@@ -29,6 +29,10 @@ jq -r '.model // empty' settings.json                                # 顶层字
 jq -r '.env | to_entries[] | select(.key | test("MODEL")) | .value'  # 模型相关环境变量
 ```
 
+## ~/.claude.json 数据
+
+- `.projects` — 已注册项目的路径列表，用 `jq -r '.projects | keys[] // empty' ~/.claude.json` 提取
+
 ## 模型优先级
 
 `.claude/settings.local.json` > `.claude/settings.json` > `~/.claude/settings.json`
@@ -115,3 +119,15 @@ _helper() {
 ## 嵌套子命令
 
 每层子命令用 `_arguments -C` + `->state` 分发，三层嵌套（如 `plugin marketplace <sub>`）每层独立。
+
+## _arguments 候选模式选择
+
+- `(a b)` — 固定列表，仅允许列出的值
+- `_describe` → 辅助函数 — 提供候选建议但允许自由输入（如 install target 选 stable/latest 外可输任意版本号）
+
+## _numbers 用法
+
+```bash
+'--timeout[specify timeout]: :_numbers -u minutes -d 30 timeout'  # 带单位和默认值
+'::timeout (min) [30]:_numbers'                                    # 简写：message 中标注默认值
+```
