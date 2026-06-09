@@ -82,6 +82,25 @@ _helper() {
 - `-y`/`--yes` — 跳过确认提示
 - `--json` — JSON 输出
 
+## 动态列表缓存
+
+耗时 CLI 命令结果缓存到 `$ZSH_CACHE_DIR`，TTL 用 epoch 存首行：
+
+```zsh
+_helper() {
+  local -a items
+  local cache_file=$ZSH_CACHE_DIR/zsh_claude_xxx
+  if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
+    items=(${(f)"$(tail -n +2 $cache_file)"})
+  else
+    items=(${(f)"$(claude xxx list 2>/dev/null)"})
+    [[ ${#items} -gt 0 ]] && { date +%s; print -l -- $items } > $cache_file
+  fi
+  [[ ${#items} -eq 0 ]] && return 1
+  _describe 'tag' items
+}
+```
+
 ## 嵌套子命令
 
 每层子命令用 `_arguments -C` + `->state` 分发，三层嵌套（如 `plugin marketplace <sub>`）每层独立。
