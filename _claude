@@ -259,11 +259,21 @@ _claude_mcp() {
   esac
 }
 
+_claude_install_targets() {
+  local -a targets
+  targets=(
+    'stable:stable release'
+    'latest:latest release'
+  )
+  _describe 'target' targets
+}
+
 _claude_install() {
   _arguments \
+  '--force[force installation even if already installed]' \
   '-h[display help]' \
   '--help[display help]' \
-  '1:target:(stable latest)'
+  '::target (stable, latest, or version):_claude_install_targets'
 }
 
 _claude_ultrareview() {
