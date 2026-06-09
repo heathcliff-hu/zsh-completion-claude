@@ -65,7 +65,8 @@ _cmd() {
 
 ## 会话文件
 
-- `~/.claude/projects/<slug>/` — 会话 `.jsonl` 存放目录，slug = `${PWD//\//-}`
+- `~/.claude/projects/<slug>/` — 会话 `.jsonl` 存放目录，slug = `${PWD//\//-}` 再 `${slug//./-}`
+- 若 slug 目录不存在，遍历 `~/.claude/projects/*/sessions-index.json` 用 `jq -r '.originalPath'` 匹配 `$PWD` 回退
 - 文件名即 session ID（UUID），`jq -r '.displayName // empty'` 提取显示名
 
 ## 动态补全候选
