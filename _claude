@@ -598,8 +598,19 @@ _claude_models() {
 # where slug = $PWD with "/" replaced by "-"
 _claude_resume() {
   local slug=${PWD//\//-}
+  slug=${slug//./-}
   local dir=~/.claude/projects/$slug
-  [[ -d $dir ]] || return 1
+  [[ -d $dir ]] || {
+    dir=""
+    local f
+    for f in ~/.claude/projects/*/sessions-index.json(N); do
+      if [[ "$(jq -r '.originalPath // ""' "$f" 2>/dev/null)" == "$PWD" ]]; then
+        dir="${f:h}"
+        break
+      fi
+    done
+    [[ -z $dir ]] && return 1
+  }
 
   local -a sessions
   sessions=(${(f)"$(
