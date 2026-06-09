@@ -40,19 +40,72 @@ _claude_mcp_cmds() {
   local -a subcmds
   subcmds=(
     'add:add an MCP server'
-    'remove:remove an MCP server'
+    'add-from-claude-desktop:import MCP servers from Claude Desktop'
+    'add-json:add an MCP server with a JSON string'
+    'get:get details about an MCP server'
+    'help:display help for command'
     'list:list configured MCP servers'
-    'serve:start MCP server'
+    'remove:remove an MCP server'
+    'reset-project-choices:reset approved and rejected project-scoped MCP servers'
+    'serve:start the Claude Code MCP server'
   )
   _describe 'mcp command' subcmds
 }
 
-_claude_mcp() {
+_claude_mcp_servers() {
+  local -a items
+  local cache_file=$ZSH_CACHE_DIR/zsh_claude_mcp_servers
+
+  # cache with 1h TTL: line1 = epoch, rest = server names
+  if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
+    items=(${(f)"$(tail -n +2 $cache_file)"})
+  else
+  	items=("${(@f)$(claude mcp list 2>/dev/null | grep ':')}")
+    if [[ ${#items} -gt 0 ]]; then
+      # shellcheck disable=SC1073 disable=SC1056 disable=SC1072 disable=SC1083
+      { date +%s; print -l -- $items } > $cache_file
+    fi
+  fi
+
+  [[ ${#items} -eq 0 ]] && return 1
+  _describe 'server' items
+}
+
+_claude_mcp_get() {
   _arguments \
   '-h[display help]' \
   '--help[display help]' \
+  '1:server name:_claude_mcp_servers'
+}
+
+_claude_mcp_remove() {
+  _arguments \
+  '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)' \
+  '-h[display help]' \
+  '--help[display help]' \
+  '1:server name:_claude_mcp_servers'
+}
+
+_claude_mcp() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  _arguments -C \
+  '-h[display help]' \
+  '--help[display help]' \
   '1: :_claude_mcp_cmds' \
-  '*::arguments:_normal'
+  '*:: :->subargs' \
+  && return
+
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        get)    _claude_mcp_get "$@" && return ;;
+        remove) _claude_mcp_remove "$@" && return ;;
+        *)      _normal && return ;;
+      esac
+    ;;
+  esac
 }
 
 _claude_install() {
