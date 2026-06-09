@@ -76,7 +76,7 @@ _claude_agents() {
   '--add-dir[additional directory for tool access in dispatched sessions]:directory:_directories' \
   '--agent[default agent for dispatched sessions]:agent: ' \
   '--allow-dangerously-skip-permissions[make bypass-permissions available to dispatched sessions]' \
-  '--cwd[show only sessions started under path]:path:_files -/' \
+  '--cwd[show only sessions started under path]:path:_directories' \
   '--dangerously-skip-permissions[alias for --permission-mode bypassPermissions]' \
   '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
   '--json[print live sessions as JSON array and exit]' \
@@ -114,8 +114,7 @@ _claude_auth_status() {
   '--json[output as JSON]' \
   '--text[output as human-readable text]' \
   '-h[display help]' \
-  '--help[display help]' \
-  && return
+  '--help[display help]'
 }
 
 _claude_auth() {
@@ -361,11 +360,7 @@ _claude_resume() {
   for f in $dir/*.jsonl(Nom); do
     id=${f:t:r}
     name=$(jq -r '.displayName // empty' "$f" 2>/dev/null)
-    if [[ -n $name ]]; then
-      sessions+=("${id}:${name}")
-    else
-      sessions+=("${id}:session")
-    fi
+    sessions+=("${id}:${name:-session}")
   done
   
   [[ ${#sessions} -eq 0 ]] && return 1
@@ -384,7 +379,7 @@ _cmd_file_spec() {
   if compset -P '*:'; then
     _path_files
   else
-    compadd -S ':' -d <(printf '%s\n' 'file resource id') 'file_id'
+    compadd -S ':' 'file_id'
   fi
 }
 
