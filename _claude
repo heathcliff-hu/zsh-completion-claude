@@ -468,18 +468,24 @@ _claude_resume() {
   local slug=${PWD//\//-}
   local dir=~/.claude/projects/$slug
   [[ -d $dir ]] || return 1
-  
+
   local -a sessions
-  local f id name
-  # shellcheck disable=SC2035 disable=SC1073 disable=SC1036 disable=SC1058 disable=SC1072
-  for f in $dir/*.jsonl(Nom); do
-    id=${f:t:r}
-    name=$(jq -r '.displayName // empty' "$f" 2>/dev/null)
-    sessions+=("${id}:${name:-session}")
-  done
-  
+  sessions=(${(f)"$(
+    for f in $dir/*.jsonl(N); do
+      ts=$(stat -f '%m' "$f" 2>/dev/null) || continue
+      id=${f:t:r}
+      name=$(jq -r 'select(.type == "custom-title") | .customTitle // empty' "$f" 2>/dev/null | head -1)
+      time_str=$(date -r "$ts" '+%Y-%m-%d %H:%M:%S')
+      if [[ -n $name ]]; then
+        print -r -- "$ts ${id}:${time_str}  ${name}"
+      else
+        print -r -- "$ts ${id}:${time_str}"
+      fi
+    done | sort -rn | cut -d' ' -f2-
+  )"})
+
   [[ ${#sessions} -eq 0 ]] && return 1
-  _describe 'session' sessions
+  _describe -V 'session' sessions
 }
 
 _cmd_plugin_dir() {

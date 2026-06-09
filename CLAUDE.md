@@ -15,6 +15,7 @@ rm -f ~/.zcompdump* _claude.zwc && zcompile _claude && exec zsh   # 部署
 
 - `$var:string` 裸写会被 zsh 解析为 `${var:flag}` 而非字符串拼接，必须写 `${var}:string`
 - `_describe` 只能在补全函数上下文内调用，独立测试需要用 `zsh -fc 'source file; ...'`
+- `_describe -V` — 默认按 key 字母排序，加 `-V` 保持数组传入顺序不变
 - `_arguments` 中 `(-x --long){-x,--long}'[描述]'` 共享描述即可自动合并显示，无需额外处理
 - 子命令别名（如 plugin/plugins）共用相同描述时 `_describe` 自动分组
 - `_arguments` 规格中 ACTION 不要内联 `_describe "multi word" arr`——空格导致 zsh 把后续词当独立补全词泄漏，必须抽成独立辅助函数
@@ -74,6 +75,16 @@ _helper() {
   [[ ${#items} -eq 0 ]] && return 1
   _describe 'tag' items
 }
+
+按 mtime 降序排列用 `sort -rn` + `cut -d' ' -f2-`（比 zsh glob `om`/`Om` 更可靠）：
+
+```zsh
+items=(${(f)"$(
+  for f in $dir/*.jsonl(N); do
+    print -r -- "$(stat -f '%m' "$f") $f"
+  done | sort -rn | cut -d' ' -f2-
+)"})
+_describe -V 'tag' items
 ```
 
 ## Plugin 子命令通用选项
