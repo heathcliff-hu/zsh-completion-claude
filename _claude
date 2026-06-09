@@ -36,6 +36,24 @@ _claude_help_opts() {
   '--help[display help]'
 }
 
+# comma-separated tool names for --tools/--allowedTools/--disallowedTools etc.
+_claude_tool_names() {
+  _values -s , 'tool' \
+    'Bash' 'Read' 'Write' 'Edit' \
+    'Glob' 'Grep' 'WebSearch' 'WebFetch' \
+    'Task' 'TaskCreate' 'TaskUpdate' 'TaskGet' 'TaskList' \
+    'NotebookEdit' 'Agent' 'AskUserQuestion' \
+    'EnterPlanMode' 'ExitPlanMode' 'Skill' \
+    'CronCreate' 'CronDelete' 'CronList' \
+    'ScheduleWakeup' 'Workflow' \
+    'mcp__*'
+}
+
+# comma-separated setting sources
+_claude_setting_sources() {
+  _values -s , 'source' user project local
+}
+
 _claude_mcp_cmds() {
   local -a subcmds
   subcmds=(
@@ -289,18 +307,18 @@ _claude_agents() {
   _arguments \
   '-h[display help]' \
   '--help[display help]' \
-  '--add-dir[additional directory for tool access in dispatched sessions]:directory:_directories' \
+  '*--add-dir[additional directory for tool access in dispatched sessions]:directory:_directories' \
   '--agent[default agent for dispatched sessions]:agent: ' \
   '--allow-dangerously-skip-permissions[make bypass-permissions available to dispatched sessions]' \
   '--cwd[show only sessions started under path]:path:_directories' \
   '--dangerously-skip-permissions[alias for --permission-mode bypassPermissions]' \
   '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
   '--json[print live sessions as JSON array and exit]' \
-  '--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
+  '*--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
   '--model[default model for dispatched sessions]:model:_claude_models' \
   '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)' \
-  '--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
-  '--setting-sources[comma-separated setting sources]:sources:(user project local)' \
+  '*--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
+  '--setting-sources[comma-separated setting sources]: :_claude_setting_sources' \
   '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
   '--strict-mcp-config[only use MCP servers from --mcp-config in dispatched sessions]'
 }
@@ -430,7 +448,7 @@ _claude_plugin() {
           '--author-email[author email]:email:_email_addresses -c' \
           '--description[manifest description]:text: ' \
           '(-f --force)'{-f,--force}'[overwrite existing plugin at target]' \
-          '--with[also scaffold components]:components: ' \
+          '*--with[also scaffold components]:component:(skills agents hooks mcp lsp output-style channel)' \
           '-h[display help]' '--help[display help]' \
           '1:plugin name: ' && return
         ;;
@@ -522,7 +540,7 @@ _claude_plugin_marketplace() {
         add)
           _arguments \
           '--scope[where to declare the marketplace]:scope:(user project local)' \
-          '--sparse[limit checkout to specific directories]:paths: ' \
+          '*--sparse[limit checkout to specific directories]:paths: ' \
           '-h[display help]' '--help[display help]' \
           '1:source: ' && return
         ;;
@@ -650,11 +668,11 @@ _claude() {
     
     # Permissions / tools
     '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)'
-    '--tools[specify list of available tools]:tools: '
-    '--allowedTools[comma/space-separated tool names to allow]:tools: '
-    '--allowed-tools[comma/space-separated tool names to allow]:tools: '
-    '--disallowedTools[comma/space-separated tool names to deny]:tools: '
-    '--disallowed-tools[comma/space-separated tool names to deny]:tools: '
+    '--tools[specify list of available tools]: :_claude_tool_names'
+    '--allowedTools[comma/space-separated tool names to allow]: :_claude_tool_names'
+    '--allowed-tools[comma/space-separated tool names to allow]: :_claude_tool_names'
+    '--disallowedTools[comma/space-separated tool names to deny]: :_claude_tool_names'
+    '--disallowed-tools[comma/space-separated tool names to deny]: :_claude_tool_names'
     '--allow-dangerously-skip-permissions[enable bypassing all permission checks as option]'
     '--dangerously-skip-permissions[bypass all permission checks]'
     
@@ -663,11 +681,11 @@ _claude() {
     '--append-system-prompt[append system prompt to default]:prompt: '
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
-    '--betas[beta headers to include in API requests]:betas: '
+    '*--betas[beta headers to include in API requests]:betas: '
     
     # Directories / files / plugins
-    '--add-dir[additional directories for tool access]:directories:_directories'
-    '--file[file resources to download at startup]:spec (file_id\:relative_path):_cmd_file_spec'
+    '*--add-dir[additional directories for tool access]:directories:_directories'
+    '*--file[file resources to download at startup]:spec (file_id\:relative_path):_cmd_file_spec'
     '--plugin-dir[load plugin from directory or .zip]:path:_cmd_plugin_dir'
     '--plugin-url[fetch plugin .zip from URL]:url:_urls'
     
@@ -695,7 +713,7 @@ _claude() {
     '--remote-control[start interactive session with Remote Control enabled]:name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
     '--prompt-suggestions[enable prompt suggestions]'
-    '--setting-sources[comma-separated setting sources]:sources:(user project local)'
+    '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
     '--settings[path to settings JSON file or JSON string]:file or json: '
     '--exclude-dynamic-system-prompt-sections[move per-machine sections to first user message]'
     '--from-pr[resume session linked to PR]:pr number/url: '
