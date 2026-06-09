@@ -1,4 +1,5 @@
 #compdef claude
+# shellcheck disable=SC1009
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
@@ -31,8 +32,8 @@ _claude_cmd() {
 # common options shared by many subcommands that accept -h/--help
 _claude_help_opts() {
   _arguments \
-    '-h[display help]' \
-    '--help[display help]'
+  '-h[display help]' \
+  '--help[display help]'
 }
 
 _claude_mcp_cmds() {
@@ -48,50 +49,274 @@ _claude_mcp_cmds() {
 
 _claude_mcp() {
   _arguments \
-    '-h[display help]' \
-    '--help[display help]' \
-    '1: :_claude_mcp_cmds' \
-    '*::arguments:_normal'
+  '-h[display help]' \
+  '--help[display help]' \
+  '1: :_claude_mcp_cmds' \
+  '*::arguments:_normal'
 }
 
 _claude_install() {
   _arguments \
-    '-h[display help]' \
-    '--help[display help]' \
-    '1:target:(stable latest)'
+  '-h[display help]' \
+  '--help[display help]' \
+  '1:target:(stable latest)'
 }
 
 _claude_ultrareview() {
   _arguments \
-    '-h[display help]' \
-    '--help[display help]' \
-    '1:target:_files'
+  '-h[display help]' \
+  '--help[display help]' \
+  '1:target:_files'
 }
 
 _claude_agents() {
   _arguments \
-    '-h[display help]' \
-    '--help[display help]' \
-    '--add-dir[additional directory for tool access in dispatched sessions]:directory:_files -/' \
-    '--agent[default agent for dispatched sessions]:agent: ' \
-    '--allow-dangerously-skip-permissions[make bypass-permissions available to dispatched sessions]' \
-    '--cwd[show only sessions started under path]:path:_files -/' \
-    '--dangerously-skip-permissions[alias for --permission-mode bypassPermissions]' \
-    '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
-    '--json[print live sessions as JSON array and exit]' \
-    '--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
-    '--model[default model for dispatched sessions]:model:_claude_models' \
-    '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)' \
-    '--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_files' \
-    '--setting-sources[comma-separated setting sources]:sources:(user project local)' \
-    '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
-    '--strict-mcp-config[only use MCP servers from --mcp-config in dispatched sessions]'
+  '-h[display help]' \
+  '--help[display help]' \
+  '--add-dir[additional directory for tool access in dispatched sessions]:directory:_directories' \
+  '--agent[default agent for dispatched sessions]:agent: ' \
+  '--allow-dangerously-skip-permissions[make bypass-permissions available to dispatched sessions]' \
+  '--cwd[show only sessions started under path]:path:_files -/' \
+  '--dangerously-skip-permissions[alias for --permission-mode bypassPermissions]' \
+  '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
+  '--json[print live sessions as JSON array and exit]' \
+  '--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
+  '--model[default model for dispatched sessions]:model:_claude_models' \
+  '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)' \
+  '--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
+  '--setting-sources[comma-separated setting sources]:sources:(user project local)' \
+  '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
+  '--strict-mcp-config[only use MCP servers from --mcp-config in dispatched sessions]'
+}
+
+_claude_auth_cmds() {
+  local -a subcmds
+  subcmds=(
+    'login:Sign in to your Anthropic account'
+    'logout:Log out from your Anthropic account'
+    'status:Show authentication status'
+  )
+  _describe 'auth command' subcmds
+}
+
+_claude_auth_login() {
+  _arguments \
+  '--claudeai[use Claude subscription]' \
+  '--console[use Anthropic Console (API usage billing)]' \
+  '--email[pre-populate email address]:email:_email_addresses -c' \
+  '--sso[force SSO login flow]' \
+  '-h[display help]' \
+  '--help[display help]'
+}
+
+_claude_auth_status() {
+  _arguments \
+  '--json[output as JSON]' \
+  '--text[output as human-readable text]' \
+  '-h[display help]' \
+  '--help[display help]' \
+  && return
 }
 
 _claude_auth() {
-  _arguments \
-    '-h[display help]' \
-    '--help[display help]'
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+  
+  _arguments -C \
+  '-h[display help]' \
+  '--help[display help]' \
+  '1: :_claude_auth_cmds' \
+  '*:: :->subargs' \
+  && return
+  
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        login)  _claude_auth_login "$@" && return ;;
+        logout) _claude_help_opts "$@" && return ;;
+        status) _claude_auth_status "$@" && return ;;
+      esac
+    ;;
+  esac
+}
+
+_claude_plugins() {
+  local -a items
+  items=(${(f)"$(claude plugin list 2>/dev/null | sed -n 's/.*❯ //p')"})
+  [[ ${#items} -eq 0 ]] && return 1
+  _describe 'plugin' items
+}
+
+_claude_marketplaces() {
+  local -a items
+  items=(${(f)"$(claude plugin marketplace list 2>/dev/null | sed -n 's/.*❯ //p')"})
+  [[ ${#items} -eq 0 ]] && return 1
+  _describe 'marketplace' items
+}
+
+_claude_plugin_cmds() {
+  local -a subcmds
+  subcmds=(
+    'details:Show plugin component inventory and token cost'
+    'disable:Disable an enabled plugin'
+    'enable:Enable a disabled plugin'
+    'init:Scaffold a new plugin'
+    'new:Scaffold a new plugin'
+    'install:Install a plugin from available marketplaces'
+    'i:Install a plugin from available marketplaces'
+    'list:List installed plugins'
+    'marketplace:Manage Claude Code marketplaces'
+    'prune:Remove auto-installed dependencies no longer needed'
+    'autoremove:Remove auto-installed dependencies no longer needed'
+    'tag:Create a release git tag for a plugin'
+    'uninstall:Uninstall an installed plugin'
+    'remove:Uninstall an installed plugin'
+    'update:Update a plugin to the latest version'
+    'validate:Validate a plugin or marketplace manifest'
+  )
+  _describe 'plugin command' subcmds
+}
+
+_claude_plugin() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+  
+  _arguments -C \
+  '-h[display help]' \
+  '--help[display help]' \
+  '1: :_claude_plugin_cmds' \
+  '*:: :->subargs' \
+  && return
+  
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        details)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name:_claude_plugins' && return
+        ;;
+        disable)
+          _arguments \
+          '(-a --all)'{-a,--all}'[disable all enabled plugins]' \
+          '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name:_claude_plugins' && return
+        ;;
+        enable)
+          _arguments \
+          '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name:_claude_plugins' && return
+        ;;
+        init|new)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name: ' && return
+        ;;
+        install|i)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin: ' && return
+        ;;
+        list)
+          _arguments \
+          '--available[include available plugins from marketplaces]' \
+          '--json[output as JSON]' \
+          '-h[display help]' '--help[display help]' && return
+        ;;
+        prune|autoremove)
+          _arguments \
+          '--dry-run[list what would be removed without removing]' \
+          '(-s --scope)'{-s,--scope}'[prune at scope]:scope:(user project local)' \
+          '(-y --yes)'{-y,--yes}'[skip confirmation prompt]' \
+          '-h[display help]' '--help[display help]' && return
+        ;;
+        tag)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:path:_files -/' && return
+        ;;
+        uninstall|remove)
+          _arguments \
+          '--keep-data[preserve plugin persistent data directory]' \
+          '--prune[also remove auto-installed dependencies no longer needed]' \
+          '(-s --scope)'{-s,--scope}'[uninstall from scope]:scope:(user project local)' \
+          '(-y --yes)'{-y,--yes}'[skip --prune confirmation prompt]' \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name:_claude_plugins' && return
+        ;;
+        update)
+          _arguments \
+          '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local managed)' \
+          '-h[display help]' '--help[display help]' \
+          '1:plugin name:_claude_plugins' && return
+        ;;
+        validate)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:path:_files' && return
+        ;;
+        marketplace)
+          _claude_plugin_marketplace "$@" && return
+        ;;
+      esac
+    ;;
+  esac
+}
+
+_claude_plugin_marketplace_cmds() {
+  local -a subcmds
+  subcmds=(
+    'add:Add a marketplace from a URL, path, or GitHub repo'
+    'list:List all configured marketplaces'
+    'remove:Remove a configured marketplace'
+    'rm:Remove a configured marketplace'
+    'update:Update marketplace(s) from their source'
+  )
+  _describe 'marketplace command' subcmds
+}
+
+_claude_plugin_marketplace() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+  
+  _arguments -C \
+  '-h[display help]' \
+  '--help[display help]' \
+  '1: :_claude_plugin_marketplace_cmds' \
+  '*:: :->subargs' \
+  && return
+  
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        add)
+          _arguments \
+          '--scope[where to declare the marketplace]:scope:(user project local)' \
+          '--sparse[limit checkout to specific directories]:paths: ' \
+          '-h[display help]' '--help[display help]' \
+          '1:source: ' && return
+        ;;
+        list)
+          _arguments \
+          '--json[output as JSON]' \
+          '-h[display help]' '--help[display help]' && return
+        ;;
+        remove|rm)
+          _arguments \
+          '--scope[remove from specific settings scope]:scope:(user project local)' \
+          '-h[display help]' '--help[display help]' \
+          '1:marketplace name:_claude_marketplaces' && return
+        ;;
+        update)
+          _arguments \
+          '-h[display help]' '--help[display help]' \
+          '1:marketplace name:_claude_marketplaces' && return
+        ;;
+      esac
+    ;;
+  esac
 }
 
 # --- model candidates --------------------------------------------------------
@@ -100,50 +325,91 @@ _claude_auth() {
 _claude_models() {
   local f sonnet_m opus_m haiku_m default_m
   local sonnet_s opus_s haiku_s default_s
-
+  
   for f in .claude/settings.local.json .claude/settings.json ~/.claude/settings.json; do
     [[ -f $f ]] || continue
-
+    
     [[ -z $sonnet_m ]] && sonnet_m=$(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL // .env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME // empty' "$f" 2>/dev/null) && [[ -n $sonnet_m ]] && sonnet_s=${f/$HOME/~}
     [[ -z $opus_m ]]   && opus_m=$(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL // .env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME // empty' "$f" 2>/dev/null)     && [[ -n $opus_m ]]   && opus_s=${f/$HOME/~}
     [[ -z $haiku_m ]]  && haiku_m=$(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null) && [[ -n $haiku_m ]]  && haiku_s=${f/$HOME/~}
     [[ -z $default_m ]] && default_m=$(jq -r '.env.ANTHROPIC_MODEL // empty' "$f" 2>/dev/null) && [[ -n $default_m ]] && default_s=${f/$HOME/~}
   done
-
+  
   local -a models
   [[ -n $sonnet_m ]]  && models+=("sonnet:${sonnet_m} — ${sonnet_s}")
   [[ -n $opus_m ]]    && models+=("opus:${opus_m} — ${opus_s}")
   [[ -n $haiku_m ]]   && models+=("haiku:${haiku_m} — ${haiku_s}")
   [[ -n $default_m ]] && models+=("${default_m}:default (${default_s})")
-
+  
   # fallback to bare aliases if nothing resolved
   [[ ${#models} -eq 0 ]] && models=('sonnet:Sonnet model' 'opus:Opus model' 'haiku:Haiku model')
-
+  
   _describe 'model' models
+}
+
+# --- resume candidates --------------------------------------------------------
+# Lists session .jsonl files from ~/.claude/projects/<slug>/
+# where slug = $PWD with "/" replaced by "-"
+_claude_resume() {
+  local slug=${PWD//\//-}
+  local dir=~/.claude/projects/$slug
+  [[ -d $dir ]] || return 1
+  
+  local -a sessions
+  local f id name
+  # shellcheck disable=SC2035 disable=SC1073 disable=SC1036 disable=SC1058 disable=SC1072
+  for f in $dir/*.jsonl(Nom); do
+    id=${f:t:r}
+    name=$(jq -r '.displayName // empty' "$f" 2>/dev/null)
+    if [[ -n $name ]]; then
+      sessions+=("${id}:${name}")
+    else
+      sessions+=("${id}:session")
+    fi
+  done
+  
+  [[ ${#sessions} -eq 0 ]] && return 1
+  _describe 'session' sessions
+}
+
+_cmd_plugin_dir() {
+  _alternative \
+  'directories:plugin directory:_files -/' \
+  'zip-files:plugin zip file:_files -g "*.zip(-.)"'
+}
+
+_cmd_file_spec() {
+  # 格式：file_id:relative_path
+  # 已经输入冒号后，补 relative_path
+  if compset -P '*:'; then
+    _path_files
+  else
+    compadd -S ':' -d <(printf '%s\n' 'file resource id') 'file_id'
+  fi
 }
 
 _claude() {
   local -a opts line state
   local curcontext="$curcontext" ret=1
-
+  
   # --- main options ---
   # grouped for readability; empty description lines separate logical groups
   opts=(
     # Output / session control
     '(-p --print)'{-p,--print}'[print response and exit (non-interactive)]'
     '(-c --continue)'{-c,--continue}'[continue most recent conversation]'
-    '(-r --resume)'{-r,--resume}'[resume conversation by session ID]:session id or search term: '
+    '(-r --resume)'{-r,--resume}'[resume conversation by session ID]:session:_claude_resume'
     '--fork-session[fork new session ID when resuming]'
     '--session-id[use specific session ID]:uuid: '
     '(-n --name)'{-n,--name}'[set display name for session]:name: '
     '--no-session-persistence[disable session persistence (--print only)]'
-
+    
     # Model / effort
     '--model[model for current session]:model:_claude_models'
     '--effort[effort level for current session]:level:(low medium high xhigh max)'
     '--fallback-model[enable fallback to specified model(s)]:model:_claude_models'
     '--max-budget-usd[max dollar amount for API calls (--print only)]:amount: '
-
+    
     # Input / output format
     '--input-format[input format (--print only)]:format:(text stream-json)'
     '--output-format[output format (--print only)]:format:(text json stream-json)'
@@ -151,7 +417,7 @@ _claude() {
     '--include-partial-messages[include partial message chunks (--print + stream-json)]'
     '--include-hook-events[include hook lifecycle events (stream-json)]'
     '--replay-user-messages[re-emit user messages from stdin (stream-json)]'
-
+    
     # Permissions / tools
     '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)'
     '--tools[specify list of available tools]:tools: '
@@ -161,37 +427,37 @@ _claude() {
     '--disallowed-tools[comma/space-separated tool names to deny]:tools: '
     '--allow-dangerously-skip-permissions[enable bypassing all permission checks as option]'
     '--dangerously-skip-permissions[bypass all permission checks]'
-
+    
     # System prompt / agents
     '--system-prompt[system prompt to use for session]:prompt: '
     '--append-system-prompt[append system prompt to default]:prompt: '
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
     '--betas[beta headers to include in API requests]:betas: '
-
+    
     # Directories / files / plugins
-    '--add-dir[additional directories for tool access]:directory:_files -/'
-    '--file[file resources to download at startup]:spec (file_id:relative_path): '
-    '--plugin-dir[load plugin from directory or .zip]:path:_files'
-    '--plugin-url[fetch plugin .zip from URL]:url: '
-
+    '--add-dir[additional directories for tool access]:directories:_directories'
+    '--file[file resources to download at startup]:spec (file_id\:relative_path):_cmd_file_spec'
+    '--plugin-dir[load plugin from directory or .zip]:path:_cmd_plugin_dir'
+    '--plugin-url[fetch plugin .zip from URL]:url:_urls'
+    
     # MCP
     '--mcp-config[load MCP servers from JSON files/strings]:config: '
     '--strict-mcp-config[only use MCP servers from --mcp-config]'
     '--mcp-debug[deprecated, use --debug]'
-
+    
     # Debug / verbose
     '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]:filter: '
     '--debug-file[write debug logs to specific path]:path:_files'
     '--verbose[override verbose mode setting]'
-
+    
     # IDE / Chrome / tmux / worktree
     '--ide[auto-connect to IDE on startup]'
     '--chrome[enable Claude in Chrome integration]'
     '--no-chrome[disable Claude in Chrome integration]'
     '--tmux[create tmux session for worktree (requires --worktree)]'
     '(-w --worktree)'{-w,--worktree}'[create new git worktree for session]:name: '
-
+    
     # Other
     '--bare[minimal mode: skip hooks, LSP, plugin sync, etc.]'
     '--brief[enable SendUserMessage tool for agent-to-user communication]'
@@ -203,19 +469,19 @@ _claude() {
     '--settings[path to settings JSON file or JSON string]:file or json: '
     '--exclude-dynamic-system-prompt-sections[move per-machine sections to first user message]'
     '--from-pr[resume session linked to PR]:pr number/url: '
-
+    
     # Help / version
     '(-h --help)'{-h,--help}'[display help]'
     '(-v --version)'{-v,--version}'[output version number]'
   )
-
+  
   # --- subcommand dispatch ---
   _arguments -C -S \
-    $opts \
-    '1: :_claude_cmd' \
-    '*::arguments:->subargs' \
-    && ret=0
-
+  $opts \
+  '1: :_claude_cmd' \
+  '*::arguments:->subargs' \
+  && ret=0
+  
   case "$state" in
     subargs)
       case "$line[1]" in
@@ -225,16 +491,16 @@ _claude() {
         doctor)       _claude_help_opts "$@" && ret=0 ;;
         install)      _claude_install "$@" && ret=0 ;;
         mcp)          _claude_mcp "$@" && ret=0 ;;
-        plugin|plugins) _claude_help_opts "$@" && ret=0 ;;
+        plugin|plugins) _claude_plugin "$@" && ret=0 ;;
         project)      _claude_help_opts "$@" && ret=0 ;;
         setup-token)  _claude_help_opts "$@" && ret=0 ;;
         ultrareview)  _claude_ultrareview "$@" && ret=0 ;;
         update|upgrade) _claude_help_opts "$@" && ret=0 ;;
         *)            _default && ret=0 ;;
       esac
-      ;;
+    ;;
   esac
-
+  
   return ret
 }
 

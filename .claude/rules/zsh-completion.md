@@ -49,7 +49,10 @@ compdef cmd1=cmd2                           # cmd1 使用 cmd2 的补全
 
 | 函数 | 用途 |
 |---|---|
-| `_path_files` / `_files` | 文件路径补全 |
+| `_files` | 文件路径补全 |
+| `_path_files` | 路径文件补全，更底层/灵活 |
+| `_directories` | 目录补全 |
+| `_dir_list` | 目录列表补全 |
 | `_users` / `_groups` | 用户名/组名补全 |
 | `_net_interfaces` | 网卡名称补全 |
 | `_parameters` | Shell 变量名补全 |
@@ -57,6 +60,13 @@ compdef cmd1=cmd2                           # cmd1 使用 cmd2 的补全
 | `_message` | 无补全时显示帮助信息 |
 | `_guard` | 在 ACTION 中检查当前词是否符合条件 |
 | `_sequence` | 包装其他补全函数，补全分隔符分隔的列表 |
+| `_numbers` | 数字范围补全 |
+| `_email_addresses` | 邮箱地址补全 |
+| `_urls` | URL 补全 |
+| `_message` | 显示提示信息 |
+| `_nothing` | 明确不提供补全 |
+| `_default` | 默认补全行为 |
+| `_arrays` | 数组参数补全 |
 
 ### 缓存相关
 
