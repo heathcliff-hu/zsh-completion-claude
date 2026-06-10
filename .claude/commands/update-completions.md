@@ -1,0 +1,97 @@
+# 检查 _claude 补全文件是否与当前 Claude Code 版本一致
+
+自动对比 CLI 命令/选项、系统工具列表与 `_claude` 补全文件，发现缺失项并更新，最后同步版本号。
+
+---
+
+## 一、检查命令与选项
+
+自动运行 `claude` 及各子命令 `--help`，对比 `_claude` 中的补全实现。
+
+### 步骤
+
+1. **获取 CLI 命令列表**：`claude --help`
+2. **获取主选项**：同上，逐项对比 `_claude` 主函数中的选项规格
+   - 缺失选项 → 补充
+   - 选项 `...`/`(repeatable)` 标注但补全缺 `*` 前缀 → 修复
+3. **获取各子命令**：逐一运行 `claude <cmd> --help`
+   - `claude agents --help`
+   - `claude auth --help`
+   - `claude auto-mode --help`
+   - `claude doctor --help`
+   - `claude install --help`
+   - `claude mcp --help`
+   - `claude plugin --help`
+   - `claude project --help`
+   - `claude setup-token --help`
+   - `claude ultrareview --help`
+   - `claude update --help`
+4. **对比子命令列表**：逐一确认 `_claude_cmd`、`_claude_mcp_cmds`、`_claude_plugin_cmds` 等函数中的子命令与 help 输出一致
+5. **对比子命令选项**：运行 `claude <cmd> <sub> --help` 获取深层选项，对比对应补全函数
+   - 必填/可选参数位置标注是否一致（`1:` vs `::`）
+   - 候选列表是否完整
+6. **对比要点**：
+   - 选项缺失 → 补充
+   - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
+   - 候选列表（如 `--scope` 的 user/project/local）不完整 → 对齐 help 描述
+   - 可重复选项漏标 `*` → 修复
+
+---
+
+## 二、检查工具名称 `_claude_tool_names`
+
+对比系统 prompt 中 `## Tools` 部分列出的工具与 `_claude_tool_names` 函数内的候选。
+
+### 步骤
+
+1. 从当前对话 system prompt 提取所有工具名称
+2. 读取 `_claude` 中 `_claude_tool_names` 函数内容
+3. 逐项对比，找出缺失的工具
+4. 用 `Edit` 插入缺失项，归类规则：
+   - `Task*` 系列 → Task 行
+   - `Enter*/Exit*` 系列 → Enter/Exit 行
+   - 其余按字母/功能分组插入
+
+### 工具对照快照（2026-06-10）
+
+| 类别        | 工具名                                                     |
+| ----------- | ---------------------------------------------------------- |
+| 基础        | Bash Read Write Edit Glob Grep                             |
+| Web         | WebSearch WebFetch                                         |
+| 任务        | TaskCreate TaskUpdate TaskGet TaskList TaskOutput TaskStop |
+| 笔记本      | NotebookEdit                                               |
+| Agent       | Agent AskUserQuestion                                      |
+| 计划/工作树 | EnterPlanMode EnterWorktree ExitPlanMode ExitWorktree      |
+| 技能        | Skill                                                      |
+| 定时        | CronCreate CronDelete CronList ScheduleWakeup              |
+| 工作流      | Workflow                                                   |
+| MCP         | mcp__*（通配所有 MCP 前缀工具）                            |
+
+---
+
+## 三、更新版本号
+
+修改完成后，获取当前版本并更新 `_claude` 头部注释：
+
+```shell
+claude --version
+```
+
+将版本号写入 `_claude` 文件的 `# Version:` 行。
+
+---
+
+## 四、语法检查 + 部署
+
+```shell
+zsh -n _claude && rm -f ~/.zcompdump* _claude.zwc; zcompile _claude
+```
+
+---
+
+## 注意
+
+- 系统 prompt 工具列表和 CLI help 输出随版本更新可能变化，运行时以实际输出为准
+- `.zwc` 或 `.zcompdump` 任一残留都会导致旧版生效，部署必须清除
+- 子命令 `help` 通常不需加入补全（仅代理到 `--help`），忽略即可
+- `cache-clear` 为手动添加的隐藏命令，不在 help 输出中属正常
