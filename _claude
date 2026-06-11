@@ -3,7 +3,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.170
+# Version: 2.1.172
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -83,8 +83,10 @@ _claude_mcp_cmds() {
 
 _claude_mcp_servers() {
   local -a items
-  local cache_file=$ZSH_CACHE_DIR/zsh_claude_mcp_servers
-  
+  local slug="${PWD//\//-}"
+  slug="${slug//./-}"
+  local cache_file="$ZSH_CACHE_DIR/zsh_claude_mcp_servers_$slug"
+
   # cache with 1h TTL: line1 = epoch, rest = server names
   if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
     items=(${(f)"$(tail -n +2 $cache_file)"})
@@ -95,9 +97,24 @@ _claude_mcp_servers() {
       { date +%s; print -l -- $items } > $cache_file
     fi
   fi
-  
+
   [[ ${#items} -eq 0 ]] && return 1
-  _describe 'server' items
+
+  # Escape : in server names for _describe (e.g. "plugin:playwright" -> "plugin\:playwright")
+  local -a transformed
+  local name rest
+  for item in "${items[@]}"; do
+    name="${item%%: *}"
+    rest="${item##*: }"
+    if [[ "$name" == "$item" ]]; then
+      transformed+=("$item")
+    else
+      name="${name//:/\\:}"
+      transformed+=("${name}: ${rest}")
+    fi
+  done
+
+  _describe 'server' transformed
 }
 
 _claude_mcp_get() {
@@ -156,7 +173,9 @@ _claude_mcp_cache_clear() {
   # 将下面的代码复制到 ~/.zshrc 中，以便在运行 `claude mcp cache-clear` 时清除 MCP 服务器列表的缓存
   # claude() {
   #   if [[ "$1" == "mcp" && "$2" == "cache-clear" ]]; then
-  #     local cache_file=$ZSH_CACHE_DIR/zsh_claude_mcp_servers
+  #     local slug="${PWD//\//-}"
+  #     slug="${slug//./-}"
+  #     local cache_file="$ZSH_CACHE_DIR/zsh_claude_mcp_servers_$slug"
   #     rm -f -- "$cache_file"
   #     print "Cleared Claude MCP completion cache: $cache_file"
   #     return 0

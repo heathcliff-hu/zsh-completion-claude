@@ -21,6 +21,7 @@ rm -f ~/.zcompdump* _claude.zwc; zcompile _claude && exec zsh   # 部署
 - `_arguments` 规格中 ACTION 不要内联 `_describe "multi word" arr`——空格导致 zsh 把后续词当独立补全词泄漏，必须抽成独立辅助函数
 - `_arguments` message 中的 `:` 必须转义为 `\:`，否则被解析为 spec 分隔符导致 `parse error near ')'`
 - **_arguments ACTION 函数不可包装中间层** — `_arguments '1: :_wrapper'` 中 `_wrapper` 直接调 `_describe`，不能委托给另一函数：`_wrapper() { _helper 'tag' items }` 会导致补全失效。补全逻辑必须直接在 ACTION 函数中内联
+- **_describe 匹配词中的 `:` 必须转义** — `_describe` 用首个 `:` 切分 `name:description`；若匹配词内含 `:`（如 MCP server 名 `plugin:playwright`），需先转义为 `\:`，否则被误拆
 - **_arguments 可选选项参数 `::` + 固定候选列表 → 补全泄漏** — zsh 无法判断下一词是选项值还是位置参数，同时显示两者（如 `--prompt-suggestions` 的 `::value:(true false)` 会混入子命令）。改用 `:`（必填）——用户不按 Tab 仍可直接 Enter 跳过该值。含 `=` 的选项（如 `--tmux=`）因值必须跟 `=`，`::` 不会泄漏
 - **_arguments `1:` 位置参数守卫** — ACTION 函数开头加 `(( CURRENT == 2 )) || return 1`，阻止选项后补全时泄漏子命令候选（`claude --model x <Tab>` 不再显示 agents/auth 等）
 - **文件补全选择准则** — 日常用 `_files`；需精细路径控制（如 `_alternative` 内过滤）用 `_path_files -g`；需严格过滤无匹配不回退时手动 `items=( *.json(N) ); compadd -a items`
@@ -151,6 +152,8 @@ _helper() {
   _describe 'tag' items
 }
 ```
+
+- **动态列表缓存按项目隔离** — 输出随目录变化的 CLI 命令（如 `claude mcp list`），缓存文件名需含项目 slug（`${PWD//\//-}`）区分，避免跨项目污染
 
 ## 嵌套子命令
 
