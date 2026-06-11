@@ -117,17 +117,6 @@ _helper() {
 }
 ```
 
-按 mtime 降序排列用 `sort -rn` + `cut -d' ' -f2-`（比 zsh glob `om`/`Om` 更可靠）：
-
-```shell
-items=(${(f)"$(
-  for f in $dir/*.jsonl(N); do
-    print -r -- "$(stat -f '%m' "$f") $f"
-  done | sort -rn | cut -d' ' -f2-
-)"})
-_describe -V 'tag' items
-```
-
 ## Plugin 子命令通用选项
 
 - `-s`/`--scope` — `(user project local)` 或含 `managed`（update）

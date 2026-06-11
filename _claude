@@ -94,7 +94,7 @@ _claude_mcp_servers() {
     items=("${(@f)$(claude mcp list 2>/dev/null | grep ':')}")
     if [[ ${#items} -gt 0 ]]; then
       # shellcheck disable=SC1073 disable=SC1056 disable=SC1072 disable=SC1083
-      { date +%s; print -l -- $items } > $cache_file
+      { date +%s; print -l -- "${items[@]}" } > $cache_file
     fi
   fi
 
@@ -196,7 +196,7 @@ _claude_project_cmds() {
 
 _claude_project_paths() {
   local -a items
-  items=(${(f)"$(jq -r '.projects | keys[] // empty' ~/.claude.json 2>/dev/null)"})
+  items=(${(f)"$(jq -r '.projects // {} | keys[]' ~/.claude.json 2>/dev/null)"})
   [[ ${#items} -eq 0 ]] && return 1
   _describe 'project path' items
 }
@@ -631,7 +631,7 @@ _claude_resume() {
   local -a sessions recent
   zmodload -F zsh/stat b:zstat 2>/dev/null
   zmodload -F zsh/datetime b:strftime 2>/dev/null
-  recent=($dir/*.jsonl(Om[1,20]N))
+  recent=($dir/*.jsonl(om[1,20]N))
 
   local f ts id name time_str
   for f in $recent; do
@@ -660,7 +660,7 @@ _cmd_file_spec() {
   # 格式：file_id:relative_path
   # 已经输入冒号后，补 relative_path
   if compset -P '*:'; then
-    _path_files
+    _files
   else
     compadd -S ':' 'file_id'
   fi
@@ -681,9 +681,9 @@ _claude_bg_sessions() {
   # collect dirs with mtime, sort desc, max 20
   local -a dir_lines
   dir_lines=(${(f)"$(
-    for d in $jobs_dir/*(/N); do
+    for d in "$jobs_dir"/*(/om[1,20]N); do
       print -r -- "$(zstat -F %s +mtime "$d" 2>/dev/null) ${d:t}"
-    done | sort -rn | head -20
+    done
   )"})
 
   for line in $dir_lines; do
@@ -718,13 +718,13 @@ _claude_bg_sessions() {
 
 _claude_daemon_config_file() {
   _alternative \
-    'default:default config file:compadd -- ~/.claude/daemon.json' \
+    'default:default config file:compadd ~/.claude/daemon.json' \
     'files:config file:_path_files -g "*.json(-.)" -g ".*.json(-.)"'
 }
 
 _claude_daemon_log_file() {
   _alternative \
-    'default:default log file:compadd -- ~/.claude/daemon.log' \
+    'default:default log file:compadd ~/.claude/daemon.log' \
     'files:log file:_files'
 }
 
