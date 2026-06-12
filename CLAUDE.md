@@ -43,6 +43,7 @@ zsh -n _claude && rm -f ~/.zcompdump*; exec zsh # 语法检查 + 清除缓存 + 
 
 - `stat -f '%m'` 是 BSD 专属，Linux 用 `stat -c '%Y'`；跨平台方案用 zsh 内置 `zstat -F %s +mtime`
 - `date -r $ts` 是 BSD 专属，Linux 用 `date -d @$ts`；跨平台方案用 zsh 内置 `strftime`
+- `date +%s` → `$EPOCHSECONDS` — zsh 内置 epoch（需 `zmodload -F zsh/datetime b:epochtime`），免 fork，跨平台一致
 
 ## jq 查询 settings 文件
 
@@ -132,7 +133,10 @@ _helper() {
     items=(${(f)"$(tail -n +2 $cache_file)"})
   else
     items=(${(f)"$(claude xxx list 2>/dev/null)"})
-    [[ ${#items} -gt 0 ]] && { date +%s; print -l -- $items } > $cache_file
+    if [[ ${#items} -gt 0 ]]; then
+      local tmp="${cache_file}.tmp.$$"
+      { print -r -- "$EPOCHSECONDS"; print -l -- "${items[@]}"; } > "$tmp" && mv "$tmp" "$cache_file"
+    fi
   fi
   [[ ${#items} -eq 0 ]] && return 1
   _describe 'tag' items
@@ -140,6 +144,31 @@ _helper() {
 ```
 
 - **动态列表缓存按项目隔离** — 输出随目录变化的 CLI 命令（如 `claude mcp list`），缓存文件名需含项目 slug（`${PWD//\//-}`）区分，避免跨项目污染
+- **原子缓存写入** — 先写 `${cache_file}.tmp.$$` 再 `mv` 覆盖，防止并发/中断写入导致缓存损坏
+- **TTL 用 `$EPOCHSECONDS`** — zsh 内置，免 fork `date`，缓存行首仍存 epoch 数字
+
+## ShellCheck
+
+- `.shellcheckrc` — `shell=bash`，启用 `avoid-nullary-conditions,require-variable-braces,check-unassigned-uppercase`，禁用 zsh glob qualifier 假阳性（SC1036/SC1058/SC1072/SC1073）
+- `_claude` 第 2 行 `# shellcheck disable=SC1009,SC1036,SC1058,SC1072,SC1073` — zsh 专有语法需内联屏蔽，`.shellcheckrc` 不覆盖所有解析级错误
+- 修改 `_claude` 后运行 `shellcheck -x -o all _claude` + `zsh -n _claude` 验证零错误
+
+## 依赖守卫
+
+- `_claude_need cmd ...` — 用 `$+commands[$cmd]`（zsh 内置，无 fork）检查外部依赖
+- 依赖 `jq`/`claude` 的函数顶部加 `_claude_need jq || return 1`，优雅降级，不报错
+
+  ```shell
+  _claude_need() {
+    local cmd
+    for cmd in "$@"; do
+      (( $+commands[$cmd] )) || return 1
+    done
+    return 0
+  }
+  ```
+
+- 适用范围：`_claude_models`、`_claude_resume`、`_claude_project_paths`、`_claude_bg_sessions`（jq）、`_claude_mcp_servers`、`_claude_plugins`、`_claude_marketplaces`（claude）
 
 ## 嵌套子命令
 

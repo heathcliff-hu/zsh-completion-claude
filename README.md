@@ -92,7 +92,10 @@ claude() {
 # 语法检查
 zsh -n _claude
 
-# 部署（清除缓存 + 编译 + 重载 shell）
+# 静态分析（需安装 shellcheck）
+shellcheck -x -o all _claude
+
+# 部署（清除缓存 + 重载 shell）
 rm -f ~/.zcompdump*; exec zsh
 ```
 
@@ -104,6 +107,7 @@ rm -f ~/.zcompdump*; exec zsh
 _claude                          # 单一补全文件（~930 行，50 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
+.shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）
 .claude/commands/update-completions.md  # 更新提示词
 .claude/rules/zsh-completion.md  # Zsh Completion 编写指南
 ```
