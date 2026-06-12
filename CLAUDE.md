@@ -5,11 +5,8 @@
 编辑 `_claude` 后必须：
 
 ```shell
-zsh -n _claude                       # 语法检查
-rm -f ~/.zcompdump* _claude.zwc; zcompile _claude && exec zsh   # 部署
+zsh -n _claude && rm -f ~/.zcompdump*; exec zsh # 语法检查 + 清除缓存 + 部署
 ```
-
-`.zwc` 或 `.zcompdump` 任一残留都会导致旧版生效。
 
 ## Zsh 陷阱
 

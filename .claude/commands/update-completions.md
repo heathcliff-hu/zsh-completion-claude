@@ -84,7 +84,7 @@ claude --version
 ## 四、语法检查 + 部署
 
 ```shell
-zsh -n _claude && rm -f ~/.zcompdump* _claude.zwc; zcompile _claude
+zsh -n _claude && rm -f ~/.zcompdump*; exec zsh 
 ```
 
 ---
@@ -92,6 +92,6 @@ zsh -n _claude && rm -f ~/.zcompdump* _claude.zwc; zcompile _claude
 ## 注意
 
 - 系统 prompt 工具列表和 CLI help 输出随版本更新可能变化，运行时以实际输出为准
-- `.zwc` 或 `.zcompdump` 任一残留都会导致旧版生效，部署必须清除
+- `.zcompdump` 残留会导致旧版生效，部署必须清除
 - 子命令 `help` 通常不需加入补全（仅代理到 `--help`），忽略即可
 - `cache-clear` 为手动添加的隐藏命令，不在 help 输出中属正常

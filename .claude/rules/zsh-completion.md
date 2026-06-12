@@ -259,7 +259,6 @@ compadd -a wordsarray                                      # 从数组添加
 | 重载补全函数 | `unfunction _func && autoload -U _func` |
 | 清除缓存 | `rm -f ~/.zcompdump*; exec zsh` |
 | 语法检查 | `zsh -n <file>.zsh` |
-| 编译加速 | `zcompile <file>.zsh` |
 
 ## 常见陷阱
 
@@ -405,5 +404,5 @@ _wanted directories expl directory _files -/ "$@" -
 
 - 补全文件以 `#compdef <command>` 开头，命名为 `_<command>`
 - 放插件目录或 `src/` 子目录，确保 `fpath` 包含该目录
-- 修改 `_command` 后必须：`rm -f ~/.zcompdump* _command.zwc ; zcompile _command && exec zsh`
-- `.zwc` 或 `.zcompdump` 任一残留都会导致旧版生效
+- 修改 `_command` 后必须：`rm -f ~/.zcompdump*; exec zsh`
+- `.zcompdump` 残留会导致旧版生效

@@ -93,10 +93,10 @@ claude() {
 zsh -n _claude
 
 # 部署（清除缓存 + 编译 + 重载 shell）
-rm -f ~/.zcompdump* _claude.zwc; zcompile _claude && exec zsh
+rm -f ~/.zcompdump*; exec zsh
 ```
 
-> `.zwc` 或 `.zcompdump` 任一残留都会导致旧版生效。
+> `.zcompdump` 残留可能会导致旧版生效。
 
 ## 文件结构
 
