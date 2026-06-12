@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.172
+# Version: 2.1.174
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -73,6 +73,7 @@ _claude_tool_names() {
   'EnterPlanMode' 'EnterWorktree' 'ExitPlanMode' 'ExitWorktree' 'Skill' \
   'CronCreate' 'CronDelete' 'CronList' \
   'ScheduleWakeup' 'Workflow' \
+  'ListMcpResourcesTool' 'ReadMcpResourceTool' \
   'mcp__*'
 }
 
