@@ -12,6 +12,20 @@
 # flesh out subcommand options when they change.
 # ------------------------------------------------------------------------------
 
+zmodload -F zsh/stat b:zstat 2>/dev/null
+zmodload -F zsh/datetime b:strftime 2>/dev/null
+zmodload -F zsh/datetime b:epochtime 2>/dev/null
+
+# Guard: skip completion generation when required dependency missing
+# Usage: _claude_need cmd1 cmd2 ... || return 1
+_claude_need() {
+  local cmd
+  for cmd in "$@"; do
+    (( $+commands[$cmd] )) || return 1
+  done
+  return 0
+}
+
 _claude_cmd() {
   # only offer subcommands at word position 2 (claude <Tab>), not after options
   (( CURRENT == 2 )) || return 1
@@ -84,19 +98,20 @@ _claude_mcp_cmds() {
 }
 
 _claude_mcp_servers() {
+  _claude_need claude || return 1
   local -a items
   local slug="${PWD//\//-}"
   slug="${slug//./-}"
   local cache_file="$ZSH_CACHE_DIR/zsh_claude_mcp_servers_$slug"
 
   # cache with 1h TTL: line1 = epoch, rest = server names
-  if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
+  if [[ -f $cache_file ]] && (( EPOCHSECONDS - $(head -1 $cache_file) < 3600 )); then
     items=(${(f)"$(tail -n +2 $cache_file)"})
   else
     items=("${(@f)$(claude mcp list 2>/dev/null | grep ':')}")
     if [[ ${#items} -gt 0 ]]; then
-      # shellcheck disable=SC1073 disable=SC1056 disable=SC1072 disable=SC1083
-      { date +%s; print -l -- "${items[@]}" } > $cache_file
+      local tmp="${cache_file}.tmp.$$"
+      { print -r -- "$EPOCHSECONDS"; print -l -- "${items[@]}"; } > "$tmp" && mv "$tmp" "$cache_file"
     fi
   fi
 
@@ -185,6 +200,7 @@ _claude_mcp_cache_clear() {
   #
   #   command claude "$@"
   # }
+  true
 }
 
 _claude_project_cmds() {
@@ -197,6 +213,7 @@ _claude_project_cmds() {
 }
 
 _claude_project_paths() {
+  _claude_need jq || return 1
   local -a items
   items=(${(f)"$(jq -r '.projects // {} | keys[]' ~/.claude.json 2>/dev/null)"})
   [[ ${#items} -eq 0 ]] && return 1
@@ -393,6 +410,7 @@ _claude_auth() {
 }
 
 _claude_plugins() {
+  _claude_need claude || return 1
   local -a items
   items=(${(f)"$(claude plugin list 2>/dev/null | sed -n 's/.*❯ //p')"})
   [[ ${#items} -eq 0 ]] && return 1
@@ -400,6 +418,7 @@ _claude_plugins() {
 }
 
 _claude_marketplaces() {
+  _claude_need claude || return 1
   local -a items
   items=(${(f)"$(claude plugin marketplace list 2>/dev/null | sed -n 's/.*❯ //p')"})
   [[ ${#items} -eq 0 ]] && return 1
@@ -586,6 +605,7 @@ _claude_plugin_marketplace() {
 # Resolves model aliases from settings files (highest priority wins):
 #   .claude/settings.local.json > .claude/settings.json > ~/.claude/settings.json
 _claude_models() {
+  _claude_need jq || return 1
   local f sonnet_m opus_m haiku_m default_m
   local sonnet_s opus_s haiku_s default_s
   
@@ -614,6 +634,7 @@ _claude_models() {
 # Lists session .jsonl files from ~/.claude/projects/<slug>/
 # where slug = $PWD with "/" replaced by "-"
 _claude_resume() {
+  _claude_need jq || return 1
   local slug=${PWD//\//-}
   slug=${slug//./-}
   local dir=~/.claude/projects/$slug
@@ -631,8 +652,6 @@ _claude_resume() {
 
   # pick 20 most recent .jsonl files by mtime, then extract names
   local -a sessions recent
-  zmodload -F zsh/stat b:zstat 2>/dev/null
-  zmodload -F zsh/datetime b:strftime 2>/dev/null
   recent=($dir/*.jsonl(om[1,20]N))
 
   local f ts id name time_str
@@ -671,21 +690,19 @@ _cmd_file_spec() {
 # --- background session helpers -----------------------------------------------
 
 _claude_bg_sessions() {
+  _claude_need jq || return 1
   local -a items
   local jobs_dir=${CLAUDE_CONFIG_DIR:-~/.claude}/jobs
   local id ts time_str name state info
 
   [[ -d $jobs_dir ]] || return 1
 
-  zmodload -F zsh/stat b:zstat 2>/dev/null
-  zmodload -F zsh/datetime b:strftime 2>/dev/null
-
   # collect dirs with mtime, sort desc, max 20
   local -a dir_lines
   dir_lines=(${(f)"$(
-    for d in "$jobs_dir"/*(/om[1,20]N); do
-      print -r -- "$(zstat -F %s +mtime "$d" 2>/dev/null) ${d:t}"
-    done
+        for d in "$jobs_dir"/*(/om[1,20]N); do
+          print -r -- "$(zstat -F %s +mtime "$d" 2>/dev/null) ${d:t}"
+        done
   )"})
 
   for line in $dir_lines; do
