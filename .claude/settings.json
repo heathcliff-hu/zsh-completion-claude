@@ -15,7 +15,12 @@
             "Bash(autoload -Uz _claude)",
             "Bash(rm -f ~/.zcompdump* *)",
             "Bash(xargs basename .jsonl)",
-            "Bash(xargs -I{} echo ~/.claude/projects/{})"
+            "Bash(xargs -I{} echo ~/.claude/projects/{})",
+            "Skill(shell-scripting:bash-defensive-patterns)",
+            "Skill(shell-scripting:shellcheck-configuration)"
         ]
+    },
+    "enabledPlugins": {
+        "shell-scripting@claude-code-workflows": true
     }
 }

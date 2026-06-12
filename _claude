@@ -1,5 +1,7 @@
 #compdef claude
-# shellcheck disable=SC1009
+# shellcheck disable=SC1009,SC1036,SC1058,SC1072,SC1073
+# SC1009: this is zsh, not bash/sh
+# SC1036/SC1058/SC1072/SC1073: zsh glob qualifiers like (N), (om[1,20]) confuse the parser
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
