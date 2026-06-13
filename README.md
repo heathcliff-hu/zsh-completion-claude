@@ -34,9 +34,9 @@ claude() {
 
 `agents` `attach` `auth` `auto-mode` `daemon` `doctor` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
-### 全局选项 (~80 个)
+### 全局选项 (~90 个)
 
-`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` 等
+`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--exec` `--remote` `--teammate-mode` 等
 
 ### 子命令详细补全
 
@@ -104,7 +104,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~930 行，50 个函数）
+_claude                          # 单一补全文件（~970 行，50 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）

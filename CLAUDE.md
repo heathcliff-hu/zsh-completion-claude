@@ -217,6 +217,12 @@ _claude_tool_names() {
 - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
 - 候选列表不完整 → 对齐 --help 描述
 
+## CLI 参考来源
+
+`claude --help` 不列出所有选项。权威来源是官方文档 (code.claude.com/docs/en/cli-reference)，
+其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。
+更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。
+
 ## 更新补全脚本
 
 `.claude/commands/update-completions.md` — 可复用提示词，自动对比 CLI help 输出与系统工具列表，
@@ -224,7 +230,7 @@ _claude_tool_names() {
 
 ## 架构与风格
 
-- `_claude` 为单文件自包含架构（~930 行，50 个函数），无外部依赖，直接放入 `$fpath` 即可
+- `_claude` 为单文件自包含架构（~970 行，50 个函数），无外部依赖，直接放入 `$fpath` 即可
 - 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
 - 代码块语言标识统一用 `shell`，不用 `zsh`
 
