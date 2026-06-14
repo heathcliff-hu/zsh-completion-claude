@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.176
+# Version: 2.1.177
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -90,6 +90,7 @@ _claude_mcp_cmds() {
     'add-from-claude-desktop:import MCP servers from Claude Desktop'
     'add-json:add an MCP server with a JSON string'
     'get:get details about an MCP server'
+    'help:display help for command'
     'list:list configured MCP servers'
     'remove:remove an MCP server'
     'reset-project-choices:reset approved and rejected project-scoped MCP servers'
@@ -314,6 +315,7 @@ _claude_mcp() {
         reset-project-choices) _claude_help_opts "$@" && return ;;
         serve)    _claude_mcp_serve "$@" && return ;;
         cache-clear)    _claude_mcp_cache_clear ; return ;;
+        help) _claude_mcp_cmds "$@" && return ;;
         *)        _default && return ;;
       esac
     ;;
@@ -370,6 +372,7 @@ _claude_auth_cmds() {
     'login:Sign in to your Anthropic account'
     'logout:Log out from your Anthropic account'
     'status:Show authentication status'
+    'help:display help for command'
   )
   _describe 'auth command' subcmds
 }
@@ -406,6 +409,7 @@ _claude_auth() {
         login)  _claude_auth_login "$@" && return ;;
         logout) _claude_help_opts "$@" && return ;;
         status) _claude_auth_status "$@" && return ;;
+        help)   _claude_auth_cmds "$@" && return ;;
       esac
     ;;
   esac
@@ -554,6 +558,7 @@ _claude_plugin_marketplace_cmds() {
   local -a subcmds
   subcmds=(
     'add:Add a marketplace from a URL, path, or GitHub repo'
+    'help:display help for command'
     'list:List all configured marketplaces'
     'remove:Remove a configured marketplace'
     'rm:Remove a configured marketplace'
@@ -598,6 +603,8 @@ _claude_plugin_marketplace() {
           '(-h --help)'{-h,--help}'[Display help]' \
           '::marketplace name (omit for all):_claude_marketplaces' && return
         ;;
+        help)
+          _claude_plugin_marketplace_cmds "$@" && return
       esac
     ;;
   esac
