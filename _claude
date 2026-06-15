@@ -74,7 +74,6 @@ _claude_tool_names() {
   'CronCreate' 'CronDelete' 'CronList' \
   'ScheduleWakeup' 'Workflow' \
   'ListMcpResourcesTool' 'ReadMcpResourceTool' \
-  'WaitForMcpServers' \
   'mcp__*'
 }
 
@@ -615,8 +614,8 @@ _claude_plugin_marketplace() {
 #   .claude/settings.local.json > .claude/settings.json > ~/.claude/settings.json
 _claude_models() {
   _claude_need jq || return 1
-  local f sonnet_m opus_m haiku_m default_m
-  local sonnet_s opus_s haiku_s default_s
+  local f sonnet_m opus_m haiku_m fable_m default_m
+  local sonnet_s opus_s haiku_s fable_s default_s
   
   for f in .claude/settings.local.json .claude/settings.json ~/.claude/settings.json; do
     [[ -f $f ]] || continue
@@ -624,6 +623,7 @@ _claude_models() {
     [[ -z $sonnet_m ]] && sonnet_m=$(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL // .env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME // empty' "$f" 2>/dev/null) && [[ -n $sonnet_m ]] && sonnet_s=${f/$HOME/~}
     [[ -z $opus_m ]]   && opus_m=$(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL // .env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME // empty' "$f" 2>/dev/null)     && [[ -n $opus_m ]]   && opus_s=${f/$HOME/~}
     [[ -z $haiku_m ]]  && haiku_m=$(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null) && [[ -n $haiku_m ]]  && haiku_s=${f/$HOME/~}
+    [[ -z $fable_m ]]  && fable_m=$(jq -r '.env.ANTHROPIC_DEFAULT_FABLE_MODEL // .env.ANTHROPIC_DEFAULT_FABLE_MODEL_NAME // empty' "$f" 2>/dev/null)   && [[ -n $fable_m ]]   && fable_s=${f/$HOME/~}
     [[ -z $default_m ]] && default_m=$(jq -r '.env.ANTHROPIC_MODEL // empty' "$f" 2>/dev/null) && [[ -n $default_m ]] && default_s=${f/$HOME/~}
   done
   
@@ -631,10 +631,11 @@ _claude_models() {
   [[ -n $sonnet_m ]]  && models+=("sonnet:${sonnet_m} — ${sonnet_s}")
   [[ -n $opus_m ]]    && models+=("opus:${opus_m} — ${opus_s}")
   [[ -n $haiku_m ]]   && models+=("haiku:${haiku_m} — ${haiku_s}")
+  [[ -n $fable_m ]]   && models+=("fable:${fable_m} — ${fable_s}")
   [[ -n $default_m ]] && models+=("${default_m}:default (${default_s})")
   
   # fallback to bare aliases if nothing resolved
-  [[ ${#models} -eq 0 ]] && models=('sonnet:Sonnet model' 'opus:Opus model' 'haiku:Haiku model')
+  [[ ${#models} -eq 0 ]] && models=('sonnet:Sonnet model' 'opus:Opus model' 'haiku:Haiku model' 'fable:Fable model')
   
   _describe 'model' models
 }
@@ -849,7 +850,8 @@ _claude() {
     # Output / session control
     '(-p --print)'{-p,--print}'[print response and exit (non-interactive)]'
     '(-c --continue)'{-c,--continue}'[continue most recent conversation]'
-    '(-r --resume)'{-r,--resume}'[resume conversation by session ID]:session:_claude_resume'
+    '(-r --resume)'{-r,--resume}'[resume conversation by session ID]::session:_claude_resume'
+    '--from-pr[resume session linked to PR]::pr number/url: '
     '--fork-session[fork new session ID when resuming]'
     '--session-id[use specific session ID]:uuid: '
     '(-n --name)'{-n,--name}'[set display name for session]:name: '
@@ -908,7 +910,7 @@ _claude() {
     '--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
     
     # Debug / verbose
-    '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]:filter: '
+    '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]::filter: '
     '--debug-file[write debug logs to specific path]:path:_files'
     '--verbose[override verbose mode setting]'
     
@@ -928,14 +930,13 @@ _claude() {
     '--init-only[run setup and SessionStart hooks then exit]'
     '--maintenance[run setup hooks with maintenance matcher (--print only)]'
     '--teammate-mode[agent team display mode]:mode:(auto in-process tmux)'
-    '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]:name: '
+    '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
     '--remote[create web session on claude.ai]:task description: '
     '--teleport[resume web session in local terminal]'
     '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
     '--settings[path to settings JSON file or JSON string]:file or json: '
     '--exclude-dynamic-system-prompt-sections[move per-machine sections to first user message]'
-    '--from-pr[resume session linked to PR]:pr number/url: '
     
     # Help / version
     '(-h --help)'{-h,--help}'[display help]'
