@@ -1,6 +1,6 @@
 # Zsh Completion for Claude Code
 
-## 开发循环
+## 开发
 
 编辑 `_claude` 后必须：
 
@@ -102,37 +102,18 @@ _cmd() {
 - `state`/`status`/`lifecycle` 同理取首个非空作为状态
 - `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 共用此函数
 
-## 动态补全候选
+## 动态补全
 
-从 CLI 子命令输出提取候选，用 `${(f)"$(...)"}` 按行分割：
-
-```shell
-_helper() {
-  local -a items
-  items=(${(f)"$(claude cmd list 2>/dev/null | grep '❯' | sed 's/.*❯ //')"})
-  [[ ${#items} -eq 0 ]] && return 1
-  _describe 'tag' items
-}
-```
-
-## Plugin 子命令通用选项
-
-- `-s`/`--scope` — `(user project local)` 或含 `managed`（update）
-- `-y`/`--yes` — 跳过确认提示
-- `--json` — JSON 输出
-
-## 动态列表缓存
-
-耗时 CLI 命令结果缓存到 `$ZSH_CACHE_DIR`，TTL 用 epoch 存首行：
+从 CLI 子命令输出提取候选，用 `${(f)"$(...)"}` 按行分割。耗时命令缓存到 `$ZSH_CACHE_DIR`，TTL 用 epoch 存首行：
 
 ```shell
 _helper() {
   local -a items
   local cache_file=$ZSH_CACHE_DIR/zsh_claude_xxx
-  if [[ -f $cache_file ]] && (( $(date +%s) - $(head -1 $cache_file) < 3600 )); then
+  if [[ -f $cache_file ]] && (( EPOCHSECONDS - $(head -1 $cache_file) < 3600 )); then
     items=(${(f)"$(tail -n +2 $cache_file)"})
   else
-    items=(${(f)"$(claude xxx list 2>/dev/null)"})
+    items=(${(f)"$(claude xxx list 2>/dev/null | grep '❯' | sed 's/.*❯ //')"})
     if [[ ${#items} -gt 0 ]]; then
       local tmp="${cache_file}.tmp.$$"
       { print -r -- "$EPOCHSECONDS"; print -l -- "${items[@]}"; } > "$tmp" && mv "$tmp" "$cache_file"
@@ -143,9 +124,15 @@ _helper() {
 }
 ```
 
-- **动态列表缓存按项目隔离** — 输出随目录变化的 CLI 命令（如 `claude mcp list`），缓存文件名需含项目 slug（`${PWD//\//-}`）区分，避免跨项目污染
-- **原子缓存写入** — 先写 `${cache_file}.tmp.$$` 再 `mv` 覆盖，防止并发/中断写入导致缓存损坏
+- **缓存按项目隔离** — 输出随目录变化的 CLI 命令，缓存文件名需含项目 slug（`${PWD//\//-}`）区分
+- **原子缓存写入** — 先写 `${cache_file}.tmp.$$` 再 `mv` 覆盖，防并发/中断损坏
 - **TTL 用 `$EPOCHSECONDS`** — zsh 内置，免 fork `date`，缓存行首仍存 epoch 数字
+
+## Plugin 子命令通用选项
+
+- `-s`/`--scope` — `(user project local)` 或含 `managed`（update）
+- `-y`/`--yes` — 跳过确认提示
+- `--json` — JSON 输出
 
 ## ShellCheck
 
@@ -199,13 +186,7 @@ _helper() {
 _claude_tool_names() {
   _values -s , 'tool' \
     'Bash' 'Read' 'Write' 'Edit' \
-    'Glob' 'Grep' 'WebSearch' 'WebFetch' \
-    'TaskCreate' 'TaskUpdate' 'TaskGet' 'TaskList' 'TaskOutput' 'TaskStop' \
-    'NotebookEdit' 'Agent' 'AskUserQuestion' \
-    'EnterPlanMode' 'EnterWorktree' 'ExitPlanMode' 'ExitWorktree' 'Skill' \
-    'CronCreate' 'CronDelete' 'CronList' \
-    'ScheduleWakeup' 'Workflow' \
-    'mcp__*'
+    ...
 }
 ```
 
@@ -219,7 +200,7 @@ _claude_tool_names() {
 
 ## CLI 参考来源
 
-`claude --help` 不列出所有选项。权威来源是官方文档 (code.claude.com/docs/en/cli-reference)，
+`claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，
 其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。
 更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。
 
@@ -230,24 +211,24 @@ _claude_tool_names() {
 
 ## 架构与风格
 
-- `_claude` 为单文件自包含架构（~970 行，50 个函数），无外部依赖，直接放入 `$fpath` 即可
+- `_claude` 为单文件自包含架构，无外部依赖，直接放入 `$fpath` 即可
 - 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
 - 代码块语言标识统一用 `shell`，不用 `zsh`
 
 ## 子命令补全覆盖
 
-| 命令                                            | 补全深度 | 备注                                                   |
-| ----------------------------------------------- | -------- | ------------------------------------------------------ |
-| `agents`                                        | 完整     | 含 `--model`/`--effort`/`--permission-mode` 等完整选项 |
-| `attach` / `kill` / `stop` / `rm` / `logs`      | 基础     | 会话 ID 补全 (含名称/状态)                             |
-| `auth` (login/logout/status)                    | 完整     | login 含 `--console`/`--sso` 等                        |
-| `auto-mode` (config/critique/defaults)          | 完整     | critique 含 `--model`                                  |
-| `daemon` (logs/run/status/stop/uninstall)       | 完整     | run 含 `--json-path`/`--log-file`                      |
-| `doctor` / `setup-token` / `update` / `upgrade` | 基础     | 仅 `-h`/`--help`                                       |
-| `install`                                       | 完整     | target: stable/latest/version                          |
-| `mcp` (add/get/remove/list/serve/...)           | 完整     | add 含 transport/scope/headers；server 名缓存 1h TTL   |
-| `plugin/plugins`                                | 完整     | 三层嵌套 (marketplace add/list/remove/update)          |
-| `project` (purge)                               | 完整     | purge 含 `--all`/`--dry-run`/路径补全                  |
-| `remote-control`                                | 完整     | 含 `--name`/前缀选项                                   |
-| `respawn`                                       | 完整     | 互斥 `--all` / session ID                              |
-| `ultrareview`                                   | 完整     | 含 `--json`/`--timeout`                                |
+| 命令 | 补全/选项 |
+| --- | --- |
+| `agents` | `--model` `--effort` `--permission-mode` 等 |
+| `attach`/`kill`/`stop`/`rm`/`logs` | 会话 ID，含名称/状态 |
+| `auth` | `login/logout/status`；`login --console/--sso` |
+| `auto-mode` | `config/critique/defaults`；`critique --model` |
+| `daemon` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
+| `doctor`/`setup-token`/`update`/`upgrade` | 仅 `-h/--help` |
+| `install` | `stable/latest/version` |
+| `mcp` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
+| `plugin(s)` | 三层：`marketplace add/list/remove/update` |
+| `project purge` | `--all` `--dry-run` 路径补全 |
+| `remote-control` | `--name`/前缀选项 |
+| `respawn` | `--all` 或 session ID 互斥 |
+| `ultrareview` | `--json` `--timeout` |

@@ -55,20 +55,18 @@
 
 ### 工具对照快照（2026-06-10）
 
-| 类别        | 工具名                                                     |
-| ----------- | ---------------------------------------------------------- |
-| 基础        | Bash Read Write Edit Glob Grep                             |
-| Web         | WebSearch WebFetch                                         |
-| 任务        | TaskCreate TaskUpdate TaskGet TaskList TaskOutput TaskStop |
-| 笔记本      | NotebookEdit                                               |
-| Agent       | Agent AskUserQuestion                                      |
-| 计划/工作树 | EnterPlanMode EnterWorktree ExitPlanMode ExitWorktree      |
-| 技能        | Skill                                                      |
-| 定时        | CronCreate CronDelete CronList ScheduleWakeup              |
-| 工作流      | Workflow                                                   |
-| MCP         | mcp__*（通配所有 MCP 前缀工具）                            |
-
----
+| 类别 | 工具名 |
+|---|---|
+| 基础 | Bash Read Write Edit Glob Grep |
+| Web | WebSearch WebFetch |
+| 任务 | TaskCreate TaskUpdate TaskGet TaskList TaskOutput TaskStop |
+| 笔记本 | NotebookEdit |
+| Agent | Agent AskUserQuestion |
+| 计划/工作树 | EnterPlanMode EnterWorktree ExitPlanMode ExitWorktree |
+| 技能 | Skill |
+| 定时 | CronCreate CronDelete CronList ScheduleWakeup |
+| 工作流 | Workflow |
+| MCP | mcp__*（通配所有 MCP 前缀工具）|
 
 ### 三、交叉检查
 
