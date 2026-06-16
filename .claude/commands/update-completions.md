@@ -26,6 +26,7 @@
    - `claude setup-token --help`
    - `claude ultrareview --help`
    - `claude update --help`
+   - `claude daemon --help`
 4. **对比子命令列表**：逐一确认 `_claude_cmd`、`_claude_mcp_cmds`、`_claude_plugin_cmds` 等函数中的子命令与 help 输出一致
 5. **对比子命令选项**：运行 `claude <cmd> <sub> --help` 获取深层选项，对比对应补全函数
    - 必填/可选参数位置标注是否一致（`1:` vs `::`）
@@ -69,7 +70,11 @@
 
 ---
 
-## 三、更新版本号
+### 三、交叉检查
+
+读取[官方文档](https://code.claude.com/docs/en/cli-reference)，检查 `_claude` 中遗漏的命令/选项，补充至补全文件。
+
+## 四、更新版本号
 
 修改完成后，获取当前版本并更新 `_claude` 头部注释：
 
@@ -81,7 +86,7 @@ claude --version
 
 ---
 
-## 四、语法检查 + 部署
+## 五、语法检查 + 部署
 
 ```shell
 zsh -n _claude && rm -f ~/.zcompdump*; exec zsh 
