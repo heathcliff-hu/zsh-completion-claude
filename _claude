@@ -29,7 +29,7 @@ _claude_need() {
 _claude_cmd() {
   # only offer subcommands at word position 2 (claude <Tab>), not after options
   (( CURRENT == 2 )) || return 1
-
+  
   local -a commands
   commands=(
     'agents:manage background agents'
@@ -105,7 +105,7 @@ _claude_mcp_servers() {
   local slug="${PWD//\//-}"
   slug="${slug//./-}"
   local cache_file="$ZSH_CACHE_DIR/zsh_claude_mcp_servers_$slug"
-
+  
   # cache with 1h TTL: line1 = epoch, rest = server names
   if [[ -f $cache_file ]] && (( EPOCHSECONDS - $(head -1 $cache_file) < 3600 )); then
     items=(${(f)"$(tail -n +2 $cache_file)"})
@@ -116,9 +116,9 @@ _claude_mcp_servers() {
       { print -r -- "$EPOCHSECONDS"; print -l -- "${items[@]}"; } > "$tmp" && mv "$tmp" "$cache_file"
     fi
   fi
-
+  
   [[ ${#items} -eq 0 ]] && return 1
-
+  
   # Escape : in server names for _describe (e.g. "plugin:playwright" -> "plugin\:playwright")
   local -a transformed
   local name rest
@@ -132,7 +132,7 @@ _claude_mcp_servers() {
       transformed+=("${name}: ${rest}")
     fi
   done
-
+  
   _describe 'server' transformed
 }
 
@@ -614,17 +614,43 @@ _claude_plugin_marketplace() {
 #   .claude/settings.local.json > .claude/settings.json > ~/.claude/settings.json
 _claude_models() {
   _claude_need jq || return 1
-  local f sonnet_m opus_m haiku_m fable_m default_m
-  local sonnet_s opus_s haiku_s fable_s default_s
+  local f sonnet_m opus_m haiku_m fable_m default_m custom_m
+  local sonnet_s opus_s haiku_s fable_s default_s custom_s
   
-  for f in .claude/settings.local.json .claude/settings.json ~/.claude/settings.json; do
+  for f in .claude/settings.local.json .claude/settings.json $HOME/.claude/settings.json; do
     [[ -f $f ]] || continue
     
-    [[ -z $sonnet_m ]] && sonnet_m=$(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME // .env.ANTHROPIC_DEFAULT_SONNET_MODEL // empty' "$f" 2>/dev/null) && [[ -n $sonnet_m ]] && sonnet_s=${f/$HOME/~}
-    [[ -z $opus_m ]]   && opus_m=$(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME // .env.ANTHROPIC_DEFAULT_OPUS_MODEL // empty' "$f" 2>/dev/null)     && [[ -n $opus_m ]]   && opus_s=${f/$HOME/~}
-    [[ -z $haiku_m ]]  && haiku_m=$(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME // .env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null) && [[ -n $haiku_m ]]  && haiku_s=${f/$HOME/~}
-    [[ -z $fable_m ]]  && fable_m=$(jq -r '.env.ANTHROPIC_DEFAULT_FABLE_MODEL_NAME // .env.ANTHROPIC_DEFAULT_FABLE_MODEL // empty' "$f" 2>/dev/null)   && [[ -n $fable_m ]]   && fable_s=${f/$HOME/~}
-    [[ -z $default_m ]] && default_m=$(jq -r '.env.ANTHROPIC_MODEL // empty' "$f" 2>/dev/null) && [[ -n $default_m ]] && default_s=${f/$HOME/~}
+    [[ -z $sonnet_m ]] && {
+      sonnet_m=$(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME // .env.ANTHROPIC_DEFAULT_SONNET_MODEL // empty' "$f" 2>/dev/null | sed 's/\[1[Mm]\]$//')
+      [[ -n $sonnet_m ]] && {
+        sonnet_s="${f/$HOME/~}"
+        [[ $(jq -r '.env.ANTHROPIC_DEFAULT_SONNET_MODEL // empty' "$f" 2>/dev/null | tr '[:upper:]' '[:lower:]') == *'[1m]'* ]] && sonnet_m+='[1M]'
+      }
+    }
+    [[ -z $opus_m ]] && {
+      opus_m=$(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME // .env.ANTHROPIC_DEFAULT_OPUS_MODEL // empty' "$f" 2>/dev/null | sed 's/\[1[Mm]\]$//')
+      [[ -n $opus_m ]] && {
+        opus_s="${f/$HOME/~}"
+        [[ $(jq -r '.env.ANTHROPIC_DEFAULT_OPUS_MODEL // empty' "$f" 2>/dev/null | tr '[:upper:]' '[:lower:]') == *'[1m]'* ]] && opus_m+='[1M]'
+      }
+    }
+    [[ -z $haiku_m ]] && {
+      haiku_m=$(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME // .env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null | sed 's/\[1[Mm]\]$//')
+      [[ -n $haiku_m ]] && {
+        haiku_s="${f/$HOME/~}"
+        [[ $(jq -r '.env.ANTHROPIC_DEFAULT_HAIKU_MODEL // empty' "$f" 2>/dev/null | tr '[:upper:]' '[:lower:]') == *'[1m]'* ]] && haiku_m+='[1M]'
+      }
+    }
+    [[ -z $fable_m ]] && {
+      fable_m=$(jq -r '.env.ANTHROPIC_DEFAULT_FABLE_MODEL_NAME // .env.ANTHROPIC_DEFAULT_FABLE_MODEL // empty' "$f" 2>/dev/null | sed 's/\[1[Mm]\]$//')
+      [[ -n $fable_m ]] && {
+        fable_s="${f/$HOME/~}"
+        [[ $(jq -r '.env.ANTHROPIC_DEFAULT_FABLE_MODEL // empty' "$f" 2>/dev/null | tr '[:upper:]' '[:lower:]') == *'[1m]'* ]] && fable_m+='[1M]'
+      }
+    }
+    [[ -z $default_m ]] && default_m=$(jq -r '.env.ANTHROPIC_MODEL // empty' "$f" 2>/dev/null) && [[ -n $default_m ]] && default_s="${f/$HOME/~}"
+    [[ -z $custom_m ]] && custom_m=$(jq -r '.env.ANTHROPIC_CUSTOM_MODEL_OPTION_NAME // .env.ANTHROPIC_CUSTOM_MODEL_OPTION // empty' "$f" 2>/dev/null) && [[ -n $custom_m ]] && custom_s="${f/$HOME/~}"
+    
   done
   
   local -a models
@@ -632,7 +658,8 @@ _claude_models() {
   [[ -n $opus_m ]]    && models+=("opus:${opus_m} — ${opus_s}")
   [[ -n $haiku_m ]]   && models+=("haiku:${haiku_m} — ${haiku_s}")
   [[ -n $fable_m ]]   && models+=("fable:${fable_m} — ${fable_s}")
-  [[ -n $default_m ]] && models+=("${default_m}:default (${default_s})")
+  [[ -n $default_m ]] && models+=("${default_m}:default - (${default_s})")
+  [[ -n $custom_m ]]  && models+=("${custom_m}:custom - (${custom_s})")
   
   # fallback to bare aliases if nothing resolved
   [[ ${#models} -eq 0 ]] && models=('sonnet:Sonnet model' 'opus:Opus model' 'haiku:Haiku model' 'fable:Fable model')
@@ -659,11 +686,11 @@ _claude_resume() {
     done
     [[ -z $dir ]] && return 1
   }
-
+  
   # pick 20 most recent .jsonl files by mtime, then extract names
   local -a sessions recent
   recent=($dir/*.jsonl(om[1,20]N))
-
+  
   local f ts id name time_str
   for f in $recent; do
     ts=$(zstat -F %s +mtime "$f" 2>/dev/null) || continue
@@ -676,7 +703,7 @@ _claude_resume() {
       sessions+=("${id}:${time_str}")
     fi
   done
-
+  
   [[ ${#sessions} -eq 0 ]] && return 1
   _describe -V 'session' sessions
 }
@@ -704,9 +731,9 @@ _claude_bg_sessions() {
   local -a items
   local jobs_dir=${CLAUDE_CONFIG_DIR:-~/.claude}/jobs
   local id ts time_str name state info
-
+  
   [[ -d $jobs_dir ]] || return 1
-
+  
   # collect dirs with mtime, sort desc, max 20
   local -a dir_lines
   dir_lines=(${(f)"$(
@@ -714,12 +741,12 @@ _claude_bg_sessions() {
           print -r -- "$(zstat -F %s +mtime "$d" 2>/dev/null) ${d:t}"
         done
   )"})
-
+  
   for line in $dir_lines; do
     ts=${line%% *}
     id=${line#* }
     time_str=$(strftime '%Y-%m-%d %H:%M:%S' "$ts" 2>/dev/null)
-
+    
     info=$(jq -r '
       ([.name, .displayName, .title, .sessionName, .intent, .daemonShort // ""] | map(select(. != null and . != ""))[0] // "") as $name |
       ([.state, .status, .lifecycle // ""] | map(select(. != null and . != ""))[0] // "") as $state |
@@ -733,14 +760,14 @@ _claude_bg_sessions() {
         ""
       end
     ' "$jobs_dir/$id/state.json" 2>/dev/null)
-
+    
     if [[ -n $info ]]; then
       items+=("${id}:${time_str} - ${info}")
     else
       items+=("${id}:${time_str}")
     fi
   done
-
+  
   [[ ${#items} -eq 0 ]] && return 1
   _describe -V 'session id' items
 }
@@ -785,7 +812,7 @@ _claude_daemon_stop() {
 _claude_daemon() {
   local curcontext="$curcontext" state line
   typeset -A opt_args
-
+  
   _arguments -C \
   '--json-path[config file]:path:_claude_daemon_config_file' \
   '--log-file[log file]:path:_claude_daemon_log_file' \
@@ -793,7 +820,7 @@ _claude_daemon() {
   '1: :_claude_daemon_cmds' \
   '*:: :->subargs' \
   && return
-
+  
   case "$state" in
     subargs)
       case "$line[1]" in
@@ -858,7 +885,7 @@ _claude() {
     '--no-session-persistence[disable session persistence (--print only)]'
     '--bg[start session as background agent and return immediately]'
     '--exec[run shell command as background job (with --bg)]:command: '
-
+    
     # Model / effort
     '--advisor[enable server-side advisor tool]:model:(opus sonnet fable)'
     '--model[model for current session]:model:_claude_models'
