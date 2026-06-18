@@ -39,40 +39,11 @@
 
 ---
 
-## 二、检查工具名称 `_claude_tool_names`
-
-对比系统 prompt 中 `## Tools` 部分列出的工具与 `_claude_tool_names` 函数内的候选。
-
-### 步骤
-
-1. 从当前对话 system prompt 提取所有工具名称
-2. 读取 `_claude` 中 `_claude_tool_names` 函数内容
-3. 逐项对比，找出缺失的工具
-4. 用 `Edit` 插入缺失项，归类规则：
-   - `Task*` 系列 → Task 行
-   - `Enter*/Exit*` 系列 → Enter/Exit 行
-   - 其余按字母/功能分组插入
-
-### 工具对照快照（2026-06-10）
-
-| 类别 | 工具名 |
-|---|---|
-| 基础 | Bash Read Write Edit Glob Grep |
-| Web | WebSearch WebFetch |
-| 任务 | TaskCreate TaskUpdate TaskGet TaskList TaskOutput TaskStop |
-| 笔记本 | NotebookEdit |
-| Agent | Agent AskUserQuestion |
-| 计划/工作树 | EnterPlanMode EnterWorktree ExitPlanMode ExitWorktree |
-| 技能 | Skill |
-| 定时 | CronCreate CronDelete CronList ScheduleWakeup |
-| 工作流 | Workflow |
-| MCP | mcp__*（通配所有 MCP 前缀工具）|
-
-### 三、交叉检查
+### 二、交叉检查
 
 读取[官方文档](https://code.claude.com/docs/en/cli-reference)，检查 `_claude` 中遗漏的命令/选项，补充至补全文件。
 
-## 四、更新版本号
+## 三、更新版本号
 
 修改完成后，获取当前版本并更新 `_claude` 头部注释：
 
@@ -84,11 +55,15 @@ claude --version
 
 ---
 
-## 五、语法检查 + 部署
+## 四、语法检查 + 部署
 
 ```shell
 zsh -n _claude && rm -f ~/.zcompdump*; exec zsh 
 ```
+
+## 五、更新文档
+
+更新 CLAUDE.md 以及 README.md
 
 ---
 
