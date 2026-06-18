@@ -178,18 +178,6 @@ _helper() {
 - `--help` 输出中 `...`（如 `<directories...>`）或 `(repeatable)` 标注的选项需加 `*--flag`
 - 例：`'*--add-dir[additional directories]:directory:_directories'`
 
-## 逗号分隔补全
-
-用 `_values -s ,` 在独立辅助函数中实现：
-
-```shell
-_claude_tool_names() {
-  _values -s , 'tool' \
-    'Bash' 'Read' 'Write' 'Edit' \
-    ...
-}
-```
-
 ## 补全对齐检查
 
 以 `claude <cmd> --help` 实际输出为准，逐子命令对比补全代码：
