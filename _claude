@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.181
+# Version: 2.1.183
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -929,7 +929,7 @@ _claude() {
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
     '*--betas[beta headers to include in API requests]:betas: '
-    '--prompt-suggestions[enable prompt suggestions]::value:(preset true false 1 0 yes no on off)'
+    '--prompt-suggestions[enable prompt suggestions]::value:(true false 1 0 yes no on off)'
     
     # Directories / files / plugins
     '*--add-dir[additional directories for tool access]:directories:_directories'
