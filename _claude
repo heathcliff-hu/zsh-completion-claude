@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.183
+# Version: 2.1.187
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -98,6 +98,8 @@ _claude_mcp_cmds() {
     'get:get details about an MCP server'
     'help:display help for command'
     'list:list configured MCP servers'
+    'login:authenticate with an MCP server'
+    'logout:clear stored OAuth credentials for an MCP server'
     'remove:remove an MCP server'
     'reset-project-choices:reset approved and rejected project-scoped MCP servers'
     'serve:start the Claude Code MCP server'
@@ -156,6 +158,19 @@ _claude_mcp_remove() {
   '1:server name:_claude_mcp_servers'
 }
 
+_claude_mcp_login() {
+  _arguments \
+  '(-h --help)'{-h,--help}'[Display help]' \
+  '--no-browser[print authorization URL instead of opening browser (for SSH/headless)]' \
+  '1:server name:_claude_mcp_servers'
+}
+
+_claude_mcp_logout() {
+  _arguments \
+  '(-h --help)'{-h,--help}'[Display help]' \
+  '1:server name:_claude_mcp_servers'
+}
+
 _claude_mcp_add() {
   _arguments \
   '--callback-port[fixed port for OAuth callback]:port:_numbers' \
@@ -163,8 +178,8 @@ _claude_mcp_add() {
   '--client-secret[prompt for OAuth client secret]' \
   '*-e[set environment variables]:env (KEY=value)' \
   '*--env[set environment variables]:env (KEY=value)' \
-  '*-H[set websocket headers]:header' \
-  '*--header[set websocket headers]:header' \
+  '*-H[set WebSocket headers]:header' \
+  '*--header[set WebSocket headers]:header' \
   '(-h --help)'{-h,--help}'[Display help]' \
   '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)' \
   '(-t --transport)'{-t,--transport}'[transport type]:transport:(stdio sse http)' \
@@ -315,12 +330,14 @@ _claude_mcp() {
         add)      _claude_mcp_add "$@" && return ;;
         add-json) _claude_mcp_add_json "$@" && return ;;
         get)      _claude_mcp_get "$@" && return ;;
+        login)    _claude_mcp_login "$@" && return ;;
+        logout)   _claude_mcp_logout "$@" && return ;;
         remove)   _claude_mcp_remove "$@" && return ;;
         add-from-claude-desktop) _claude_mcp_add_from_claude_desktop "$@" && return ;;
         list)     _claude_help_opts "$@" && return ;;
         reset-project-choices) _claude_help_opts "$@" && return ;;
         serve)    _claude_mcp_serve "$@" && return ;;
-        cache-clear)    _claude_mcp_cache_clear ; return ;;
+        cache-clear)  _claude_mcp_cache_clear ; return ;;
         help) _claude_mcp_cmds "$@" && return ;;
         *)        _default && return ;;
       esac
@@ -891,11 +908,12 @@ _claude() {
     '--session-id[use specific session ID]:uuid: '
     '(-n --name)'{-n,--name}'[set display name for session]:name: '
     '--no-session-persistence[disable session persistence (--print only)]'
+    '--background[start session as background agent and return immediately]'
     '--bg[start session as background agent and return immediately]'
     '--exec[run shell command as background job (with --bg)]:command: '
     
     # Model / effort
-    '--advisor[enable server-side advisor tool]:model:(opus sonnet fable)'
+    '--advisor[enable server-side advisor tool]:model:_claude_models'
     '--model[model for current session]:model:_claude_models'
     '--effort[effort level for current session]:level:(low medium high xhigh max)'
     '--fallback-model[enable fallback to specified model(s)]:model:_claude_models'
@@ -964,7 +982,7 @@ _claude() {
     '--init[run setup hooks with init matcher (--print only)]'
     '--init-only[run setup and SessionStart hooks then exit]'
     '--maintenance[run setup hooks with maintenance matcher (--print only)]'
-    '--teammate-mode[agent team display mode]:mode:(auto in-process tmux)'
+    '--teammate-mode[agent team display mode]:mode:(auto in-process iterm2 tmux)'
     '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
     '--remote[create web session on claude.ai]:task description: '
