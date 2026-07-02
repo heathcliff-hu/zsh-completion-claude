@@ -1,0 +1,10 @@
+#!/bin/sh
+# Pre-commit hook: ShellCheck + zsh syntax check on _claude
+changed=$(git diff --cached --name-only | grep -x '_claude')
+if [ -z "$changed" ]; then
+  exit 0
+fi
+
+shellcheck -x -o all _claude || { echo "SC fail on _claude"; exit 1; }
+
+zsh -n _claude || { echo "zsh syntax fail on _claude"; exit 1; }
