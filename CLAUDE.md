@@ -8,6 +8,8 @@
 zsh -n _claude && rm -f ~/.zcompdump*; exec zsh # 语法检查 + 清除缓存 + 部署
 ```
 
+- `.githooks/pre-commit` — `_claude` 变更时自动跑 `shellcheck -x -o all` + `zsh -n`，阻止不合格提交。需 `git config core.hooksPath .githooks`
+
 ## Zsh 陷阱
 
 - `$var:string` 裸写会被 zsh 解析为 `${var:flag}` 而非字符串拼接，必须写 `${var}:string`
@@ -212,9 +214,10 @@ _helper() {
 | `auto-mode` | `config/critique/defaults`；`critique --model` |
 | `daemon` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
 | `doctor`/`setup-token`/`update`/`upgrade` | 仅 `-h/--help` |
+| `gateway` | `--config` 路径补全 |
 | `install` | `stable/latest/version` |
 | `mcp` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
-| `plugin(s)` | 三层：`marketplace add/list/remove/update` |
+| `plugin(s)` | `eval/init` 等 + 三层 `marketplace` |
 | `project purge` | `--all` `--dry-run` 路径补全 |
 | `remote-control` | `--name`/前缀选项 |
 | `respawn` | `--all` 或 session ID 互斥 |
