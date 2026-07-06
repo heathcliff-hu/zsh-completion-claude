@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.198
+# Version: 2.1.201
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -389,7 +389,7 @@ _claude_agents() {
   '--json[print live sessions as JSON array and exit]' \
   '*--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
   '--model[default model for dispatched sessions]:model:_claude_models' \
-  '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)' \
+  '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk manual plan)' \
   '*--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
   '--setting-sources[comma-separated setting sources]: :_claude_setting_sources' \
   '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
@@ -988,7 +988,7 @@ _claude() {
     '--replay-user-messages[re-emit user messages from stdin (stream-json)]'
     
     # Permissions / tools
-    '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions default dontAsk plan)'
+    '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions default dontAsk manual plan)'
     '*--tools[specify list of available tools]: :_claude_tool_names'
     '*--allowedTools[comma/space-separated tool names to allow]: :_claude_tool_names'
     '*--allowed-tools[comma/space-separated tool names to allow]: :_claude_tool_names'
