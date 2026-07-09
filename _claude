@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.201
+# Version: 2.1.205
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -37,7 +37,7 @@ _claude_cmd() {
     'auth:manage authentication'
     'auto-mode:inspect auto mode classifier configuration'
     'daemon:manage background daemon'
-    'doctor:check health of auto-updater'
+    'doctor:check health of Claude Code installation'
     'gateway:run the enterprise auth/telemetry gateway'
     'install:install Claude Code native build'
     'kill:stop background session'
@@ -381,15 +381,15 @@ _claude_agents() {
   '(-h --help)'{-h,--help}'[Display help]' \
   '*--add-dir[additional directory for tool access in dispatched sessions]:directory:_directories' \
   '--agent[default agent for dispatched sessions]:agent: ' \
-  '--all[with --json: include completed sessions]' \
+  '--all[With --json: include completed sessions (the full agent view list)]' \
   '--allow-dangerously-skip-permissions[make bypass-permissions available to dispatched sessions]' \
   '--cwd[show only sessions started under path]:path:_directories' \
   '--dangerously-skip-permissions[alias for --permission-mode bypassPermissions]' \
-  '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max)' \
+  '--effort[default effort level for dispatched sessions]:level:(low medium high xhigh max ultracode)' \
   '--json[print live sessions as JSON array and exit]' \
   '*--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
   '--model[default model for dispatched sessions]:model:_claude_models' \
-  '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions default dontAsk manual plan)' \
+  '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions dontAsk manual plan)' \
   '*--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
   '--setting-sources[comma-separated setting sources]: :_claude_setting_sources' \
   '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
@@ -974,7 +974,7 @@ _claude() {
     # Model / effort
     '--advisor[enable server-side advisor tool]:model:_claude_models'
     '--model[model for current session]:model:_claude_models'
-    '--effort[effort level for current session]:level:(low medium high xhigh max)'
+    '--effort[effort level for current session]:level:(low medium high xhigh max ultracode)'
     '--fallback-model[enable fallback to specified model(s)]:model:_claude_models'
     '--max-budget-usd[max dollar amount for API calls (--print only)]:amount: '
     '--max-turns[limit agent turns (--print only)]:turns:_numbers'
@@ -988,7 +988,7 @@ _claude() {
     '--replay-user-messages[re-emit user messages from stdin (stream-json)]'
     
     # Permissions / tools
-    '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions default dontAsk manual plan)'
+    '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions dontAsk manual plan)'
     '*--tools[specify list of available tools]: :_claude_tool_names'
     '*--allowedTools[comma/space-separated tool names to allow]: :_claude_tool_names'
     '*--allowed-tools[comma/space-separated tool names to allow]: :_claude_tool_names'
@@ -1044,7 +1044,8 @@ _claude() {
     '--teammate-mode[agent team display mode]:mode:(auto in-process iterm2 tmux)'
     '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
-    '--remote[create web session on claude.ai]:task description: '
+    '--cloud[create web session on claude.ai]:task description: '
+    '--remote[deprecated alias for --cloud]:task description: '
     '--teleport[resume web session in local terminal]'
     '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
     '--settings[path to settings JSON file or JSON string]:file or json: '
