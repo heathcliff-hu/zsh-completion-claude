@@ -30,13 +30,13 @@ claude() {
 
 ## 补全覆盖
 
-### 主命令 (21 个)
+### 主命令 (22 个)
 
-`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
+`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
-### 全局选项 (~90 个)
+### 全局选项 (~95 个)
 
-`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--exec` `--remote` `--teammate-mode` 等
+`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--exec` `--forward-subagent-text` `--append-subagent-system-prompt` 等
 
 ### 子命令详细补全
 
@@ -49,9 +49,10 @@ claude() {
 | `claude auth`               | login / logout / status 子命令及选项                         |
 | `claude auto-mode`          | config / critique / defaults / help 子命令                   |
 | `claude daemon`             | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
+| `claude gateway`            | --config 路径补全                                            |
 | `claude install`            | stable / latest / 自定义版本号                               |
-| `claude mcp`                | 9 个子命令 + 服务器名动态补全（1h 缓存）                     |
-| `claude plugin`             | 16 个子命令 + 已安装插件名/市场名动态补全                    |
+| `claude mcp`                | 12 个子命令 + 服务器名动态补全（1h 缓存）                    |
+| `claude plugin`             | 17 个子命令 + 已安装插件名/市场名动态补全                    |
 | `claude plugin marketplace` | add / list / remove / update 子命令                          |
 | `claude project`            | purge 子命令（--all/--dry-run/--interactive）                |
 | `claude remote-control`     | --name / --remote-control-session-name-prefix 选项            |
@@ -104,7 +105,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1092 行，56 个函数）
+_claude                          # 单一补全文件（~1103 行，57 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）

@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.205
+# Version: 2.1.211
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -286,6 +286,12 @@ _claude_auto_mode_cmds() {
   _describe 'auto-mode command' subcmds
 }
 
+_claude_auto_mode_defaults() {
+  _arguments \
+  '(-h --help)'{-h,--help}'[Display help]' \
+  '--label[show only rules whose label starts with this prefix (case-insensitive)]:prefix: '
+}
+
 _claude_auto_mode_critique() {
   _arguments \
   '(-h --help)'{-h,--help}'[Display help]' \
@@ -307,7 +313,7 @@ _claude_auto_mode() {
       case "$line[1]" in
         config)    _claude_help_opts "$@" && return ;;
         critique)  _claude_auto_mode_critique "$@" && return ;;
-        defaults)  _claude_help_opts "$@" && return ;;
+        defaults)  _claude_auto_mode_defaults "$@" && return ;;
         help)      _claude_help_opts "$@" && return ;;
       esac
     ;;
@@ -604,13 +610,15 @@ _claude_plugin_eval() {
   '*--allow-tools[operator grant for gated tools]:tool (Tool(pattern\:*)): ' \
   '--case[filter cases by name glob]:glob: ' \
   '(-h --help)'{-h,--help}'[Display help]' \
-  '--json[emit aggregate-result.json to stdout (for CI)]' \
+  '--json[print full run result as JSON]::path:_files' \
   '--judge-model[override LLM-grader model]:model:_claude_models' \
   '--keep-temp[preserve scaffold dirs for debugging]' \
   '--max-cost-usd[hard cost ceiling]:usd: ' \
   '--model[override model for all cases]:model:_claude_models' \
   '--no-scaffold[skip scaffold_script]' \
   '--output-dir[directory for aggregate-result.json]:dir:_directories' \
+  '--publish-report[publish HTML report privately to claude.ai and print its link]' \
+  '--report[write a self-contained HTML report]:path:_files' \
   '--runs[override per-case runs]:n:_numbers' \
   '--scaffold[run scaffold_script]' \
   '*--tag[filter cases by tag]:tag: ' \
@@ -986,6 +994,7 @@ _claude() {
     '--include-partial-messages[include partial message chunks (--print + stream-json)]'
     '--include-hook-events[include hook lifecycle events (stream-json)]'
     '--replay-user-messages[re-emit user messages from stdin (stream-json)]'
+    '--forward-subagent-text[forward subagent text/thinking blocks as messages with parent_tool_use_id (--print + stream-json)]'
     
     # Permissions / tools
     '--permission-mode[permission mode for session]:mode:(acceptEdits auto bypassPermissions dontAsk manual plan)'
@@ -1003,6 +1012,7 @@ _claude() {
     '--system-prompt-file[replace system prompt from file]:file:_files'
     '--append-system-prompt[append system prompt to default]:prompt: '
     '--append-system-prompt-file[append system prompt from file]:file:_files'
+    '--append-subagent-system-prompt[append text to every subagent system prompt (--print only)]:prompt: '
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
     '*--betas[beta headers to include in API requests]:betas: '
