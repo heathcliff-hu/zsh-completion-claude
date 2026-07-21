@@ -12,6 +12,7 @@ log/
 # editor configs
 .vscode
 .idea
+.markdownlint.json
 
 # zcompile cached files
 *.zwc

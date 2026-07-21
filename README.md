@@ -40,24 +40,24 @@ claude() {
 
 ### 子命令详细补全
 
-| 命令                        | 补全内容                                                     |
+| 命令 | 补全内容 |
 | --------------------------- | ------------------------------------------------------------ |
-| `claude --model`            | 从 settings 文件解析模型别名，显示来源文件                   |
-| `claude --resume`           | 列出 `~/.claude/projects/<slug>/` 下的会话，显示 displayName |
-| `claude agents`             | 完整选项（--model、--effort、--permission-mode、--add-dir 等）|
-| `claude attach/kill/stop/rm/logs` | 后台会话 ID 补全（含名称、状态）                       |
-| `claude auth`               | login / logout / status 子命令及选项                         |
-| `claude auto-mode`          | config / critique / defaults / reset / help 子命令             |
-| `claude daemon`             | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
-| `claude gateway`            | --config 路径补全                                            |
-| `claude install`            | stable / latest / 自定义版本号                               |
-| `claude mcp`                | 12 个子命令 + 服务器名动态补全（1h 缓存）                    |
-| `claude plugin`             | 17 个子命令 + 已安装插件名/市场名动态补全                    |
-| `claude plugin marketplace` | add / list / remove / update 子命令                          |
-| `claude project`            | purge 子命令（--all/--dry-run/--interactive）                |
-| `claude remote-control`     | --name / --remote-control-session-name-prefix 选项            |
-| `claude respawn`            | --all / 会话 ID 互斥补全                                     |
-| `claude ultrareview`        | --json / --timeout 选项                                      |
+| `claude --model` | 从 settings 文件解析模型别名，显示来源文件 |
+| `claude --resume` | 列出 `~/.claude/projects/<slug>/` 下的会话，显示 displayName |
+| `claude agents` | 完整选项（--model、--effort、--permission-mode、--add-dir 等） |
+| `claude attach/kill/stop/rm/logs` | 后台会话 ID 补全（含名称、状态） |
+| `claude auth` | login / logout / status 子命令及选项 |
+| `claude auto-mode` | config / critique / defaults / reset / help 子命令 |
+| `claude daemon` | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
+| `claude gateway` | --config 路径补全 |
+| `claude install` | stable / latest / 自定义版本号 |
+| `claude mcp` | 12 个子命令 + 服务器名动态补全（1h 缓存） |
+| `claude plugin` | 17 个子命令 + 已安装插件名/市场名动态补全 |
+| `claude plugin marketplace` | add / list / remove / update 子命令 |
+| `claude project` | purge 子命令（--all/--dry-run/--interactive） |
+| `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
+| `claude respawn` | --all / 会话 ID 互斥补全 |
+| `claude ultrareview` | --json / --timeout 选项 |
 
 ### 动态补全
 
