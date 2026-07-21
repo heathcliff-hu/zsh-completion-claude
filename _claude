@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.211
+# Version: 2.1.216
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -282,6 +282,7 @@ _claude_auto_mode_cmds() {
     'critique:get AI feedback on custom auto mode rules'
     'defaults:print the default auto mode rules as JSON'
     'help:display help for command'
+    'reset:reset auto mode configuration to shipped defaults'
   )
   _describe 'auto-mode command' subcmds
 }
@@ -290,6 +291,12 @@ _claude_auto_mode_defaults() {
   _arguments \
   '(-h --help)'{-h,--help}'[Display help]' \
   '--label[show only rules whose label starts with this prefix (case-insensitive)]:prefix: '
+}
+
+_claude_auto_mode_reset() {
+  _arguments \
+  '(-h --help)'{-h,--help}'[Display help]' \
+  '(-y --yes)'{-y,--yes}'[skip confirmation prompt]'
 }
 
 _claude_auto_mode_critique() {
@@ -315,6 +322,7 @@ _claude_auto_mode() {
         critique)  _claude_auto_mode_critique "$@" && return ;;
         defaults)  _claude_auto_mode_defaults "$@" && return ;;
         help)      _claude_help_opts "$@" && return ;;
+        reset)     _claude_auto_mode_reset "$@" && return ;;
       esac
     ;;
   esac

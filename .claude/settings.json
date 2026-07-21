@@ -12,9 +12,10 @@
             "Bash(sed -n *)",
             "Bash(python3 *)",
             "ExecuteExtraTool",
+            "Bash(rm -f ~/.zcompdump*)",
             "Bash(autoload -Uz _claude)",
-            "Bash(rm -f ~/.zcompdump* *)",
             "Bash(xargs basename .jsonl)",
+            "Bash(rm -f ~/.zcompdump* && exec zsh)",
             "Bash(xargs -I{} echo ~/.claude/projects/{})",
             "Skill(shell-scripting:bash-defensive-patterns)",
             "Skill(shell-scripting:shellcheck-configuration)"

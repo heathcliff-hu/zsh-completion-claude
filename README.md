@@ -47,7 +47,7 @@ claude() {
 | `claude agents`             | 完整选项（--model、--effort、--permission-mode、--add-dir 等）|
 | `claude attach/kill/stop/rm/logs` | 后台会话 ID 补全（含名称、状态）                       |
 | `claude auth`               | login / logout / status 子命令及选项                         |
-| `claude auto-mode`          | config / critique / defaults / help 子命令                   |
+| `claude auto-mode`          | config / critique / defaults / reset / help 子命令             |
 | `claude daemon`             | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
 | `claude gateway`            | --config 路径补全                                            |
 | `claude install`            | stable / latest / 自定义版本号                               |
@@ -105,7 +105,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1103 行，57 个函数）
+_claude                          # 单一补全文件（~1111 行，58 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）
