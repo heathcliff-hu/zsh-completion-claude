@@ -30,13 +30,13 @@ claude() {
 
 ## 补全覆盖
 
-### 主命令 (22 个)
+### 主命令 (23 个)
 
-`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
+`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
 ### 全局选项 (~95 个)
 
-`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--exec` `--forward-subagent-text` `--append-subagent-system-prompt` 等
+`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--autocompact` `--forward-subagent-text` `--append-subagent-system-prompt` 等
 
 ### 子命令详细补全
 
@@ -50,6 +50,7 @@ claude() {
 | `claude auto-mode` | config / critique / defaults / reset / help 子命令 |
 | `claude daemon` | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
 | `claude gateway` | --config 路径补全 |
+| `claude import` | codex / gemini 来源 + --dry-run / --yes |
 | `claude install` | stable / latest / 自定义版本号 |
 | `claude mcp` | 12 个子命令 + 服务器名动态补全（1h 缓存） |
 | `claude plugin` | 17 个子命令 + 已安装插件名/市场名动态补全 |

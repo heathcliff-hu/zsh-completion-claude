@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.216
+# Version: 2.1.222
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -39,6 +39,7 @@ _claude_cmd() {
     'daemon:manage background daemon'
     'doctor:check health of Claude Code installation'
     'gateway:run the enterprise auth/telemetry gateway'
+    'import:import config from another AI coding agent'
     'install:install Claude Code native build'
     'kill:stop background session'
     'logs:print recent output from background session'
@@ -388,6 +389,14 @@ _claude_gateway() {
   _arguments \
   '--config[path to gateway YAML config]: :_files' \
   '(-h --help)'{-h,--help}'[display help]'
+}
+
+_claude_import() {
+  _arguments \
+  '--dry-run[show what would be imported without writing]' \
+  '(-y --yes)'{-y,--yes}'[skip the interactive picker]' \
+  '(-h --help)'{-h,--help}'[display help]' \
+  '::source (codex or gemini):(codex gemini)'
 }
 
 _claude_agents() {
@@ -1018,6 +1027,7 @@ _claude() {
   # grouped for readability; empty description lines separate logical groups
   opts=(
     # Output / session control
+    '--autocompact[auto-compact window size]:size:(auto 100k 200k 300k 400k 500k 600k 700k 800k 900k 1M)'
     '--ax-screen-reader[render screen-reader friendly output (flat text, no borders)]'
     '(-p --print)'{-p,--print}'[print response and exit (non-interactive)]'
     '(-c --continue)'{-c,--continue}'[continue most recent conversation]'
@@ -1029,8 +1039,7 @@ _claude() {
     '--no-session-persistence[disable session persistence (--print only)]'
     '--background[start session as background agent and return immediately]'
     '--bg[start session as background agent and return immediately]'
-    '--exec[run shell command as background job (with --bg)]:command: '
-    
+
     # Model / effort
     '--advisor[enable server-side advisor tool]:model:_claude_models'
     '--model[model for current session]:model:_claude_models'
@@ -1079,7 +1088,6 @@ _claude() {
     # MCP
     '*--mcp-config[load MCP servers from JSON files/strings]:config: '
     '--strict-mcp-config[only use MCP servers from --mcp-config]'
-    '--mcp-debug[deprecated, use --debug]'
     '*--channels[MCP server channels to listen on]:channel (plugin\:name@marketplace): '
     '--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
     
@@ -1134,6 +1142,7 @@ _claude() {
         daemon)       _claude_daemon "$@" && ret=0 ;;
         doctor)       _claude_help_opts "$@" && ret=0 ;;
         gateway)      _claude_gateway "$@" && ret=0 ;;
+        import)       _claude_import "$@" && ret=0 ;;
         install)      _claude_install "$@" && ret=0 ;;
         attach|kill|stop|rm|logs) _claude_attach "$@" && ret=0 ;;
         mcp)          _claude_mcp "$@" && ret=0 ;;

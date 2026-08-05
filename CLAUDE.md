@@ -183,6 +183,8 @@ _helper() {
 
 以 `claude <cmd> --help` 实际输出为准，逐子命令对比补全代码：
 
+- 隐藏命令/选项（`attach`/`kill`/`stop`/`rm`/`logs`/`respawn`/`remote-control`、`--advisor`/`--bg`/`--init` 等）不在 help 输出中，用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，需从补全删除）
+- 验证 `--tmux`/`--worktree`/`--bg` 会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
 - 选项缺失 → 补充
 - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
 - 候选列表不完整 → 对齐 --help 描述
@@ -215,6 +217,7 @@ _helper() {
 | `daemon` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
 | `doctor`/`setup-token`/`update`/`upgrade` | 仅 `-h/--help` |
 | `gateway` | `--config` 路径补全 |
+| `import` | `codex/gemini` 来源；`--dry-run` `--yes` |
 | `install` | `stable/latest/version` |
 | `mcp` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
 | `plugin(s)` | `eval/init` 等 + 三层 `marketplace` |
