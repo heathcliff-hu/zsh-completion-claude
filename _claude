@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.222
+# Version: 2.1.224
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -1090,7 +1090,8 @@ _claude() {
     '--strict-mcp-config[only use MCP servers from --mcp-config]'
     '*--channels[MCP server channels to listen on]:channel (plugin\:name@marketplace): '
     '--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
-    
+    '--environment[create cloud session on self-hosted environment]:id (ccpool_...): '
+
     # Debug / verbose
     '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]::filter: '
     '--debug-file[write debug logs to specific path]:path:_files'

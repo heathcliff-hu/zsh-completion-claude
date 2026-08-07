@@ -188,6 +188,8 @@ _helper() {
 - 选项缺失 → 补充
 - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
 - 候选列表不完整 → 对齐 --help 描述
+- 深层子命令（`auth login`/`plugin details` 等）`--help` 回退输出主帮助，无法对比；验证选项单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
+- 深层子命令 help 在循环中会回落主 help：单条执行正常，但 bash for 循环里连续调用（如 `for sub in ...; do claude plugin $sub -h; done`）会输出主帮助（stdout 非 TTY 或缓存问题）。必须逐个执行，不能放循环里
 
 ## CLI 参考来源
 
