@@ -183,7 +183,7 @@ _helper() {
 
 以 `claude <cmd> --help` 实际输出为准，逐子命令对比补全代码：
 
-- 隐藏命令/选项（`attach`/`kill`/`stop`/`rm`/`logs`/`respawn`/`remote-control`、`--advisor`/`--bg`/`--init` 等）不在 help 输出中，用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，需从补全删除）
+- 隐藏命令/选项（`attach`/`kill`/`stop`/`rm`/`logs`/`respawn`/`remote-control`、`--advisor`/`--bg`/`--init` 等）不在 help 输出中，用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，需从补全删除）；带参选项用缺参调用 `claude --advisor` 验证更安全（报 `argument missing` 即存在，无副作用）
 - 验证 `--tmux`/`--worktree`/`--bg` 会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
 - 选项缺失 → 补充
 - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
@@ -207,6 +207,10 @@ _helper() {
 - `_claude` 为单文件自包含架构，无外部依赖，直接放入 `$fpath` 即可
 - 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
 - 代码块语言标识统一用 `shell`，不用 `zsh`
+
+## 交互式补全验证
+
+- `_arguments` 只能在补全函数上下文调用，不能通过 wrapper 覆盖 `compadd` 静态验证规格（报 "can only be called from completion function"）
 
 ## 子命令补全覆盖
 
