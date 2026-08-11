@@ -58,7 +58,7 @@ claude() {
 | `claude project` | purge 子命令（--all/--dry-run/--interactive） |
 | `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
 | `claude respawn` | --all / 会话 ID 互斥补全 |
-| `claude ultrareview` | --json / --timeout 选项 |
+| `claude ultrareview` | --json / --no-post / --post / --timeout 选项 |
 
 ### 动态补全
 

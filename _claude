@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.224
+# Version: 2.1.227
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -380,6 +380,8 @@ _claude_install() {
 _claude_ultrareview() {
   _arguments \
   '--json[print raw bugs.json payload instead of formatted findings]' \
+  '--no-post[do not post the findings to the PR (default)]' \
+  '--post[post the finished review findings to the PR]' \
   '--timeout[maximum minutes to wait for the review]:minutes [30]:_numbers' \
   '(-h --help)'{-h,--help}'[display help]' \
   '::target (PR number or base branch): '
@@ -394,7 +396,7 @@ _claude_gateway() {
 _claude_import() {
   _arguments \
   '--dry-run[show what would be imported without writing]' \
-  '(-y --yes)'{-y,--yes}'[skip the interactive picker]' \
+  '--yes[skip the interactive picker]' \
   '(-h --help)'{-h,--help}'[display help]' \
   '::source (codex or gemini):(codex gemini)'
 }
@@ -646,6 +648,7 @@ _claude_plugin_eval_init() {
   _arguments \
   '--bare[write blank template instead of running interview]' \
   '(-h --help)'{-h,--help}'[display help]' \
+  '(-i --interactive)'{-i,--interactive}'[run the authoring interview]' \
   '::name: '
 }
 
@@ -663,6 +666,7 @@ _claude_plugin_eval() {
   '--keep-temp[preserve scaffold dirs for debugging]' \
   '--max-cost-usd[hard cost ceiling]:usd: ' \
   '--model[override model for all cases]:model:_claude_models' \
+  '--no-publish[keep the HTML report local; skip publishing to claude.ai]' \
   '--no-scaffold[skip scaffold_script]' \
   '--output-dir[directory for aggregate-result.json]:dir:_directories' \
   '--publish-report[publish HTML report privately to claude.ai and print its link]' \
@@ -1090,7 +1094,8 @@ _claude() {
     '--strict-mcp-config[only use MCP servers from --mcp-config]'
     '*--channels[MCP server channels to listen on]:channel (plugin\:name@marketplace): '
     '--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
-    '--environment[create cloud session on self-hosted environment]:id (ccpool_...): '
+    '--environment[create cloud session on self-hosted environment]:id (ccpool_...): ' \
+    '--ref[git ref to use for cloud environment]:ref: '
 
     # Debug / verbose
     '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]::filter: '

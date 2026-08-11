@@ -226,4 +226,4 @@ _helper() {
 | `project purge` | `--all` `--dry-run` 路径补全 |
 | `remote-control` | `--name`/前缀选项 |
 | `respawn` | `--all` 或 session ID 互斥 |
-| `ultrareview` | `--json` `--timeout` |
+| `ultrareview` | `--json` `--no-post` `--post` `--timeout` |
