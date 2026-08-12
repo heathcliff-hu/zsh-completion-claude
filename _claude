@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.227
+# Version: 2.1.229
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -583,6 +583,7 @@ _claude_plugin() {
           _arguments \
           '*--config[set a userConfig option]:key=value: ' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
+          '(-y --yes)'{-y,--yes}'[accept marketplace-declared command without confirmation]' \
           '(-h --help)'{-h,--help}'[display help]' \
           '1:plugin: ' && return
         ;;
@@ -621,6 +622,7 @@ _claude_plugin() {
         update)
           _arguments \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local managed)' \
+          '(-y --yes)'{-y,--yes}'[accept changed command without confirmation]' \
           '(-h --help)'{-h,--help}'[display help]' \
           '1:plugin name:_claude_plugins' && return
         ;;

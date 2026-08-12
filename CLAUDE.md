@@ -1,21 +1,30 @@
 # Zsh Completion for Claude Code
 
+完整编写指南见 `.claude/rules/zsh-completion.md`，版本同步流程见 `.claude/commands/update-completions.md`。
+
 ## 开发
 
 编辑 `_claude` 后必须：
 
 ```shell
-zsh -n _claude && rm -f ~/.zcompdump*; exec zsh # 语法检查 + 清除缓存 + 部署
+zsh -n _claude && shellcheck -x -o all _claude && rm -f ~/.zcompdump*; exec zsh # 语法+静态检查、清缓存、部署
 ```
 
 - `.githooks/pre-commit` — `_claude` 变更时自动跑 `shellcheck -x -o all` + `zsh -n`，阻止不合格提交。需 `git config core.hooksPath .githooks`
+- `.shellcheckrc` — `shell=bash`，启用 `avoid-nullary-conditions,require-variable-braces,check-unassigned-uppercase`，禁用 zsh glob qualifier 假阳性（SC1036/SC1058/SC1072/SC1073）
+- `_claude` 第 2 行 `# shellcheck disable=SC1009,SC1036,SC1058,SC1072,SC1073` — zsh 专有语法需内联屏蔽，`.shellcheckrc` 不覆盖所有解析级错误
+
+## 架构与风格
+
+- `_claude` 为单文件自包含架构，无外部依赖，直接放入 `$fpath` 即可
+- 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
+- 代码块语言标识统一用 `shell`，不用 `zsh`
 
 ## Zsh 陷阱
 
 - `$var:string` 裸写会被 zsh 解析为 `${var:flag}` 而非字符串拼接，必须写 `${var}:string`
 - `_describe` 只能在补全函数上下文内调用，独立测试需要用 `zsh -fc 'source file; ...'`
 - `_describe -V` — 默认按 key 字母排序，加 `-V` 保持数组传入顺序不变
-- `_arguments` 中 `(-x --long){-x,--long}'[描述]'` 共享描述即可自动合并显示，无需额外处理
 - 子命令别名（如 plugin/plugins）共用相同描述时 `_describe` 自动分组
 - `_arguments` 规格中 ACTION 不要内联 `_describe "multi word" arr`——空格导致 zsh 把后续词当独立补全词泄漏，必须抽成独立辅助函数
 - `_arguments` message 中的 `:` 必须转义为 `\:`，否则被解析为 spec 分隔符导致 `parse error near ')'`
@@ -46,62 +55,24 @@ zsh -n _claude && rm -f ~/.zcompdump*; exec zsh # 语法检查 + 清除缓存 + 
 - `date -r $ts` 是 BSD 专属，Linux 用 `date -d @$ts`；跨平台方案用 zsh 内置 `strftime`
 - `date +%s` → `$EPOCHSECONDS` — zsh 内置 epoch（需 `zmodload -F zsh/datetime b:epochtime`），免 fork，跨平台一致
 
-## jq 查询 settings 文件
+## 数据来源
+
+### 模型与设置
+
+- 优先级：`.claude/settings.local.json` > `.claude/settings.json` > `~/.claude/settings.json`
+- env 变量映射：`ANTHROPIC_MODEL`（默认模型）、`ANTHROPIC_DEFAULT_{SONNET,OPUS,HAIKU,FABLE}_MODEL`（别名解析）、`ANTHROPIC_DEFAULT_{SONNET,OPUS,HAIKU,FABLE}_MODEL_NAME`（别名解析备用）
+- jq 查询：
 
 ```shell
 jq -r '.model // empty' settings.json                                # 顶层字段
 jq -r '.env | to_entries[] | select(.key | test("MODEL")) | .value'  # 模型相关环境变量
 ```
 
-## ~/.claude.json 数据
+### 会话
 
-- `.projects` — 已注册项目的路径列表，用 `jq -r '.projects | keys[] // empty' ~/.claude.json` 提取
-
-## 模型优先级
-
-`.claude/settings.local.json` > `.claude/settings.json` > `~/.claude/settings.json`
-
-env 变量映射：
-
-- `ANTHROPIC_MODEL` — 默认模型
-- `ANTHROPIC_DEFAULT_{SONNET,OPUS,HAIKU}_MODEL` — 别名解析
-- `ANTHROPIC_DEFAULT_{SONNET,OPUS}_MODEL_NAME` — 别名解析备用
-
-## 子命令补全模式
-
-用 `_arguments -C` + `->state` 实现子命令分发，参考 `_claude_mcp`：
-
-```shell
-_cmd() {
-  local curcontext="$curcontext" state line
-  typeset -A opt_args
-  _arguments -C \
-    '-h[display help]' '--help[display help]' \
-    '1: :_cmd_subcmds' '*:: :->subargs' && return
-  case "$state" in
-    subargs)
-      case "$line[1]" in
-        sub1) _cmd_sub1 "$@" && return ;;
-        *)    _default && return ;;
-      esac
-      ;;
-  esac
-}
-```
-
-## 会话文件
-
-- `~/.claude/projects/<slug>/` — 会话 `.jsonl` 存放目录，slug = `${PWD//\//-}` 再 `${slug//./-}`
-- 若 slug 目录不存在，遍历 `~/.claude/projects/*/sessions-index.json` 用 `jq -r '.originalPath'` 匹配 `$PWD` 回退
-- 文件名即 session ID（UUID），`jq -r '.displayName // empty'` 提取显示名
-
-## 后台会话补全
-
-会话数据来自 `$CLAUDE_CONFIG_DIR/jobs/`（默认 `~/.claude/jobs/`），每个会话一个子目录，内含 `state.json`。
-
-- 目录名即 session ID，`state.json` 中 `name`/`displayName`/`title`/`sessionName`/`intent`/`daemonShort` 按优先级取首个非空作为显示名
-- `state`/`status`/`lifecycle` 同理取首个非空作为状态
-- `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 共用此函数
+- 交互会话：`~/.claude/projects/<slug>/` — 会话 `.jsonl` 存放目录，slug = `${PWD//\//-}` 再 `${slug//./-}`。若 slug 目录不存在，遍历 `~/.claude/projects/*/sessions-index.json` 用 `jq -r '.originalPath'` 匹配 `$PWD` 回退。文件名即 session ID（UUID），`jq -r '.displayName // empty'` 提取显示名
+- 后台会话：`$CLAUDE_CONFIG_DIR/jobs/`（默认 `~/.claude/jobs/`）— 每个会话一个子目录，内含 `state.json`。目录名即 session ID；`state.json` 中 `name`/`displayName`/`title`/`sessionName`/`intent`/`daemonShort` 按优先级取首个非空作为显示名；`state`/`status`/`lifecycle` 同理取首个非空作为状态。`attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 共用此函数
+- 已注册项目：`jq -r '.projects | keys[] // empty' ~/.claude.json`
 
 ## 动态补全
 
@@ -135,11 +106,35 @@ _helper() {
 - `-y`/`--yes` — 跳过确认提示
 - `--json` — JSON 输出
 
-## ShellCheck
+## 子命令补全模式
 
-- `.shellcheckrc` — `shell=bash`，启用 `avoid-nullary-conditions,require-variable-braces,check-unassigned-uppercase`，禁用 zsh glob qualifier 假阳性（SC1036/SC1058/SC1072/SC1073）
-- `_claude` 第 2 行 `# shellcheck disable=SC1009,SC1036,SC1058,SC1072,SC1073` — zsh 专有语法需内联屏蔽，`.shellcheckrc` 不覆盖所有解析级错误
-- 修改 `_claude` 后运行 `shellcheck -x -o all _claude` + `zsh -n _claude` 验证零错误
+用 `_arguments -C` + `->state` 实现子命令分发，参考 `_claude_mcp`：
+
+```shell
+_cmd() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+  _arguments -C \
+    '-h[display help]' '--help[display help]' \
+    '1: :_cmd_subcmds' '*:: :->subargs' && return
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        sub1) _cmd_sub1 "$@" && return ;;
+        *)    _default && return ;;
+      esac
+      ;;
+  esac
+}
+```
+
+每层子命令用 `_arguments -C` + `->state` 分发，三层嵌套（如 `plugin marketplace <sub>`）每层独立，参考 `_claude_plugin_marketplace` 实现。
+
+## 选项规格约定
+
+- `(a b)` — 固定列表，仅允许列出的值；`_describe` → 辅助函数 — 提供候选建议但允许自由输入（如 install target 选 stable/latest 外可输任意版本号）
+- `--help` 输出中 `...`（如 `<directories...>`）或 `(repeatable)` 标注的选项需加 `*--flag`，例：`'*--add-dir[additional directories]:directory:_directories'`
+- 数值：`'--timeout[specify timeout]: :_numbers -u minutes -d 30 timeout'` 或简写 `'::timeout (min) [30]:_numbers'`（message 中标注默认值）
 
 ## 依赖守卫
 
@@ -158,76 +153,38 @@ _helper() {
 
 - 适用范围：`_claude_models`、`_claude_resume`、`_claude_project_paths`、`_claude_bg_sessions`（jq）、`_claude_mcp_servers`、`_claude_plugins`、`_claude_marketplaces`（claude）
 
-## 嵌套子命令
+## 补全对齐验证
 
-每层子命令用 `_arguments -C` + `->state` 分发，三层嵌套（如 `plugin marketplace <sub>`）每层独立，参考 `_claude_plugin_marketplace` 实现。
-
-## _arguments 候选模式选择
-
-- `(a b)` — 固定列表，仅允许列出的值
-- `_describe` → 辅助函数 — 提供候选建议但允许自由输入（如 install target 选 stable/latest 外可输任意版本号）
-
-## _numbers 用法
-
-```shell
-'--timeout[specify timeout]: :_numbers -u minutes -d 30 timeout'  # 带单位和默认值
-'::timeout (min) [30]:_numbers'                                   # 简写：message 中标注默认值
-```
-
-## 可重复选项 `*` 前缀
-
-- `--help` 输出中 `...`（如 `<directories...>`）或 `(repeatable)` 标注的选项需加 `*--flag`
-- 例：`'*--add-dir[additional directories]:directory:_directories'`
-
-## 补全对齐检查
-
-以 `claude <cmd> --help` 实际输出为准，逐子命令对比补全代码：
-
-- 隐藏命令/选项（`attach`/`kill`/`stop`/`rm`/`logs`/`respawn`/`remote-control`、`--advisor`/`--bg`/`--init` 等）不在 help 输出中，用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，需从补全删除）；带参选项用缺参调用 `claude --advisor` 验证更安全（报 `argument missing` 即存在，无副作用）
-- 验证 `--tmux`/`--worktree`/`--bg` 会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
-- 选项缺失 → 补充
-- 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
-- 候选列表不完整 → 对齐 --help 描述
-- 深层子命令（`auth login`/`plugin details` 等）`--help` 回退输出主帮助，无法对比；验证选项单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
-- 深层子命令 help 在循环中会回落主 help：单条执行正常，但 bash for 循环里连续调用（如 `for sub in ...; do claude plugin $sub -h; done`）会输出主帮助（stdout 非 TTY 或缓存问题）。必须逐个执行，不能放循环里
+- 以 `claude <cmd> --help` 实际输出为准；深层子命令（`auth login`/`plugin details` 等）`--help` 会回退输出主帮助，验证选项需单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
+- 深层子命令 help 在 for 循环中会回落主 help（stdout 非 TTY 或缓存问题），必须逐个执行，不能放循环里
+- 隐藏命令/选项不在 help 输出中：命令用 `claude <cmd> --help` 验证（能显示 Usage 即存在）；选项用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，从补全删除），带参选项用缺参 `claude --flag` 验证更安全（报 `argument missing` 即存在，无副作用）
+- `--tmux`/`--worktree`/`--bg` 验证会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
+- zpty 发 Tab 必须 `zpty -w -n`（`-w` 默认追加换行会把命令直接执行）；菜单输出读取不可靠，验证用 `functions -t _claude` 追踪 + grep 函数调用链（如 `_claude_plugin.*install`）
 
 ## CLI 参考来源
 
-`claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，
-其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。
-更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。
+`claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。
 
 ## 更新补全脚本
 
-`.claude/commands/update-completions.md` — 可复用提示词，自动对比 CLI help 输出与系统工具列表，
-覆盖命令/选项缺失、工具名称遗漏、可重复选项 `*` 前缀，完成后更新 `_claude` 头部 `# Version:` 行。
-
-## 架构与风格
-
-- `_claude` 为单文件自包含架构，无外部依赖，直接放入 `$fpath` 即可
-- 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
-- 代码块语言标识统一用 `shell`，不用 `zsh`
-
-## 交互式补全验证
-
-- `_arguments` 只能在补全函数上下文调用，不能通过 wrapper 覆盖 `compadd` 静态验证规格（报 "can only be called from completion function"）
+`.claude/commands/update-completions.md` — 可复用提示词，自动对比 CLI help 输出与系统工具列表，覆盖命令/选项缺失、工具名称遗漏、可重复选项 `*` 前缀，完成后更新 `_claude` 头部 `# Version:` 行。
 
 ## 子命令补全覆盖
 
-| 命令 | 补全/选项 |
-| --- | --- |
-| `agents` | `--model` `--effort` `--permission-mode` 等 |
-| `attach`/`kill`/`stop`/`rm`/`logs` | 会话 ID，含名称/状态 |
-| `auth` | `login/logout/status`；`login --console/--sso` |
-| `auto-mode` | `config/critique/defaults`；`critique --model` |
-| `daemon` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
-| `doctor`/`setup-token`/`update`/`upgrade` | 仅 `-h/--help` |
-| `gateway` | `--config` 路径补全 |
-| `import` | `codex/gemini` 来源；`--dry-run` `--yes` |
-| `install` | `stable/latest/version` |
-| `mcp` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
-| `plugin(s)` | `eval/init` 等 + 三层 `marketplace` |
-| `project purge` | `--all` `--dry-run` 路径补全 |
-| `remote-control` | `--name`/前缀选项 |
-| `respawn` | `--all` 或 session ID 互斥 |
-| `ultrareview` | `--json` `--no-post` `--post` `--timeout` |
+| 命令 | 对应函数 | 补全/选项 |
+| --- | --- | --- |
+| `agents` | `_claude_agents` | `--model` `--effort` `--permission-mode` 等 |
+| `attach`/`kill`/`stop`/`rm`/`logs` | `_claude_attach` | 会话 ID，含名称/状态 |
+| `auth` | `_claude_auth` + `_claude_auth_cmds` | `login/logout/status`；`login --console/--sso` |
+| `auto-mode` | `_claude_auto_mode` + `_claude_auto_mode_cmds` | `config/critique/defaults`；`critique --model` |
+| `daemon` | `_claude_daemon` + `_claude_daemon_cmds` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
+| `doctor`/`setup-token`/`update`/`upgrade` | `_claude_help_opts` | 仅 `-h/--help` |
+| `gateway` | `_claude_gateway` | `--config` 路径补全 |
+| `import` | `_claude_import` | `codex/gemini` 来源；`--dry-run` `--yes` |
+| `install` | `_claude_install` | `stable/latest/version` |
+| `mcp` | `_claude_mcp` + `_claude_mcp_cmds` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
+| `plugin(s)` | `_claude_plugin` + `_claude_plugin_cmds` | `eval/init` 等 + 三层 `marketplace` |
+| `project` | `_claude_project` + `_claude_project_cmds` | `purge --all` `--dry-run` 路径补全 |
+| `remote-control` | `_claude_remote_control_cmd` | `--name`/前缀选项 |
+| `respawn` | `_claude_respawn_cmd` | `--all` 或 session ID 互斥 |
+| `ultrareview` | `_claude_ultrareview` | `--json` `--no-post` `--post` `--timeout` |

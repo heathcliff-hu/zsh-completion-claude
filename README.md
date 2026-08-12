@@ -106,7 +106,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1111 行，58 个函数）
+_claude                          # 单一补全文件（~1172 行，60 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）
