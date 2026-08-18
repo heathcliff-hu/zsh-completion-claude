@@ -30,9 +30,9 @@ claude() {
 
 ## 补全覆盖
 
-### 主命令 (23 个)
+### 主命令 (24 个)
 
-`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `setup-token` `stop` `ultrareview` `update` `upgrade`
+`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
 ### 全局选项 (~95 个)
 
@@ -58,6 +58,7 @@ claude() {
 | `claude project` | purge 子命令（--all/--dry-run/--interactive） |
 | `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
 | `claude respawn` | --all / 会话 ID 互斥补全 |
+| `claude self-hosted-runner` | 全部运行时/生命周期/watchdog 选项 |
 | `claude ultrareview` | --json / --no-post / --post / --timeout 选项 |
 
 ### 动态补全

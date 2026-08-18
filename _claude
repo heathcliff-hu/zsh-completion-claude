@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.229
+# Version: 2.1.234
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -50,6 +50,7 @@ _claude_cmd() {
     'remote-control:start Remote Control server'
     'respawn:restart background session'
     'rm:remove background session from list'
+    'self-hosted-runner:run a self-hosted cloud runner'
     'setup-token:set up long-lived authentication token'
     'stop:stop background session'
     'ultrareview:run cloud-hosted multi-agent code review'
@@ -396,7 +397,7 @@ _claude_gateway() {
 _claude_import() {
   _arguments \
   '--dry-run[show what would be imported without writing]' \
-  '--yes[skip the interactive picker]' \
+  '--yes[skip the interactive picker]::digest: ' \
   '(-h --help)'{-h,--help}'[display help]' \
   '::source (codex or gemini):(codex gemini)'
 }
@@ -1012,6 +1013,38 @@ _claude_remote_control_cmd() {
   '(-h --help)'{-h,--help}'[display help]'
 }
 
+_claude_self_hosted_runner() {
+  _arguments \
+  '--api-url[API base URL]:url:_urls' \
+  '--environment-secret-file[path to environment secret file]:path:_files' \
+  '--lock-to-account[lock runner to a single account at registration]:id: ' \
+  '--capacity[max concurrent sessions]:n [1]:_numbers' \
+  '--base-dir[base directory for repo checkouts]:dir:_directories' \
+  '--exec-path[binary to spawn for child sessions]:path:_files' \
+  '--hooks-dir[directory of lifecycle hook scripts]:dir:_directories' \
+  '--session-stop-grace-sec[grace period before force-killing session process]:sec [5]:_numbers' \
+  '--post-session-hook-timeout-sec[SIGTERM budget for post-session hook]:sec [60]:_numbers' \
+  '--drain-wait-sec[wait for in-flight turns before SIGTERM]:sec [0]:_numbers' \
+  '*--git-ssh-rewrite[rewrite https URLs to git\@ host]:host: ' \
+  '*--git-host-rewrite[rewrite https URLs to another host]:from\=to: ' \
+  '--use-anthropic-git-proxy[clone via Anthropic git proxy]' \
+  '--configure-git[set global git identity and commit signing]' \
+  '--push-outcome-on-release[push tracked outcome branches before deleting]' \
+  '--trust-workspace[seed persisted trust for session repo paths]::bool:(true false)' \
+  '--confine-repo-settings[repo-committed-settings confine guard]:mode:(warn enforce off)' \
+  '--health-port[port for /healthz listener]:port [8080]:_numbers' \
+  '--log-level[log level]:level:(info debug)' \
+  '--log-file[tee runner logs to file]:path:_files' \
+  '--exit-if-unused-min[exit if never assigned work]:min: ' \
+  '--drain-grace-sec[keep polling queue after sessions finish]:sec [0]:_numbers' \
+  '--retire-at[retire at absolute Unix timestamp]:epoch: ' \
+  '--release-idle-session-min[release session after idle minutes]:min: ' \
+  '--startup-timeout-min[release if child init hangs]:min [15]:_numbers' \
+  '--kill-session-after-min[SIGTERM session after wall-clock minutes]:min: ' \
+  '--debug-token-dir[DEBUG ONLY - write live tokens to disk]:path:_files' \
+  '(-h --help)'{-h,--help}'[display help]'
+}
+
 _claude() {
   local -a opts
   local curcontext="$curcontext" ret=1 state line
@@ -1109,7 +1142,7 @@ _claude() {
     '--chrome[enable Claude in Chrome integration]'
     '--no-chrome[disable Claude in Chrome integration]'
     '(-w --worktree)'{-w,--worktree}'[create new git worktree for session]::name: '
-    '--tmux=[create tmux session for worktree]::mode:(classic)'
+    '--tmux=[create tmux session for worktree (requires --worktree)]::mode:(classic)'
     
     # Other
     '--bare[minimal mode: skip hooks, LSP, plugin sync, etc.]'
@@ -1122,7 +1155,7 @@ _claude() {
     '--teammate-mode[agent team display mode]:mode:(auto in-process iterm2 tmux)'
     '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
-    '--cloud[create web session on claude.ai]:task description: '
+    '--cloud[create cloud session or attach by session ID/URL]:description: '
     '--remote[deprecated alias for --cloud]:task description: '
     '--teleport[resume web session in local terminal]'
     '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
@@ -1158,6 +1191,7 @@ _claude() {
         project)      _claude_project "$@" && ret=0 ;;
         remote-control) _claude_remote_control_cmd "$@" && ret=0 ;;
         respawn)      _claude_respawn_cmd "$@" && ret=0 ;;
+        self-hosted-runner) _claude_self_hosted_runner "$@" && ret=0 ;;
         setup-token)  _claude_help_opts "$@" && ret=0 ;;
         ultrareview)  _claude_ultrareview "$@" && ret=0 ;;
         update|upgrade) _claude_help_opts "$@" && ret=0 ;;

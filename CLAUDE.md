@@ -33,6 +33,7 @@ zsh -n _claude && shellcheck -x -o all _claude && rm -f ~/.zcompdump*; exec zsh 
 - **_arguments `1:` 位置参数守卫** — ACTION 函数开头加 `(( CURRENT == 2 )) || return 1`，阻止选项后补全时泄漏子命令候选（`claude --model x <Tab>` 不再显示 agents/auth 等）
 - **文件补全选择准则** — 日常用 `_files`；需精细路径控制（如 `_alternative` 内过滤）用 `_path_files -g`；需严格过滤无匹配不回退时手动 `items=( *.json(N) ); compadd -a items`
 - **_files -g 无匹配时回退** — `_files -g "*.json(-.)"` 找不到匹配会回退显示所有文件，泄漏非目标文件。严格过滤场景用手动 `compadd` 替代
+- **`--opt=` 等号参数形式** — 选项名以 `=` 结尾表示参数必须用等号连接：`'--tmux=[desc]::mode:(classic)'` 匹配 `--tmux=classic` 与裸 `--tmux`，但不会补全成空格形式 `--tmux classic`（CLI 会当 prompt 处理）。写错为 `'--tmux[desc]...'` 时 Tab 补全会产出空格分隔参数。验证信号：Tab 后候选应显示 `--tmux=` 带 `=` 后缀
 - **_arguments -C 子命令选项泄漏** — 当子命令（如 `agents`）直接用 `_arguments` 而非 `_arguments -C` + `->state` 时，`_arguments -C` 的 `*:: :->subargs` 回调中调用子命令函数会看到父级的全部选项。修复：在父函数 `_arguments -C` **之前**拦截，用 `(( CURRENT > 2 ))` + `shift words` + `(( CURRENT-- ))` 重排上下文，让子命令函数只看到自身选项。典型模式：
 
   ```shell
@@ -187,4 +188,5 @@ _cmd() {
 | `project` | `_claude_project` + `_claude_project_cmds` | `purge --all` `--dry-run` 路径补全 |
 | `remote-control` | `_claude_remote_control_cmd` | `--name`/前缀选项 |
 | `respawn` | `_claude_respawn_cmd` | `--all` 或 session ID 互斥 |
+| `self-hosted-runner` | `_claude_self_hosted_runner` | 连接/运行时/watchdog 全部选项 |
 | `ultrareview` | `_claude_ultrareview` | `--json` `--no-post` `--post` `--timeout` |
