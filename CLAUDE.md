@@ -159,12 +159,14 @@ _cmd() {
 - 以 `claude <cmd> --help` 实际输出为准；深层子命令（`auth login`/`plugin details` 等）`--help` 会回退输出主帮助，验证选项需单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
 - 深层子命令 help 在 for 循环中会回落主 help（stdout 非 TTY 或缓存问题），必须逐个执行，不能放循环里
 - 隐藏命令/选项不在 help 输出中：命令用 `claude <cmd> --help` 验证（能显示 Usage 即存在）；选项用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，从补全删除），带参选项用缺参 `claude --flag` 验证更安全（报 `argument missing` 即存在，无副作用）
+- 隐藏子命令同理会漏：如 `self-hosted-runner` 的 `setup`/`doctor`/`orchestrator`（主 help 无 Commands 段），交叉检查官方文档 + 逐一 `claude <cmd> <sub> --help` 实测
+- 布尔选项实测（`claude --flag -p hi`）与工具存在性实测（`claude --tools X -p hi`）会真实启动 AI 会话消耗 token：批量合并验证，加 `timeout 10`
 - `--tmux`/`--worktree`/`--bg` 验证会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
 - zpty 发 Tab 必须 `zpty -w -n`（`-w` 默认追加换行会把命令直接执行）；菜单输出读取不可靠，验证用 `functions -t _claude` 追踪 + grep 函数调用链（如 `_claude_plugin.*install`）
 
 ## CLI 参考来源
 
-`claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。
+`claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。文档也可能滞后（已移除的 `--exec` 仍列出），冲突时以实测为准。
 
 ## 更新补全脚本
 
@@ -188,5 +190,5 @@ _cmd() {
 | `project` | `_claude_project` + `_claude_project_cmds` | `purge --all` `--dry-run` 路径补全 |
 | `remote-control` | `_claude_remote_control_cmd` | `--name`/前缀选项 |
 | `respawn` | `_claude_respawn_cmd` | `--all` 或 session ID 互斥 |
-| `self-hosted-runner` | `_claude_self_hosted_runner` | 连接/运行时/watchdog 全部选项 |
+| `self-hosted-runner` | `_claude_self_hosted_runner` + `_claude_self_hosted_runner_orchestrator` | `setup`/`doctor`/`orchestrator` 子命令 + 连接/运行时/watchdog 全部选项 |
 | `ultrareview` | `_claude_ultrareview` | `--json` `--no-post` `--post` `--timeout` |

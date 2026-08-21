@@ -41,6 +41,7 @@ claude --help
 - `claude plugin eval init --help`
 - `claude plugin marketplace add/list/remove/update --help`
 - `claude project purge --help`
+- `claude self-hosted-runner setup/doctor/orchestrator --help` — 隐藏子命令，主 help 无 Commands 段，仅文档可见
 
 ### 5. 隐藏命令与选项验证
 

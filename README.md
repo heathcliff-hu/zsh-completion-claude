@@ -58,7 +58,7 @@ claude() {
 | `claude project` | purge 子命令（--all/--dry-run/--interactive） |
 | `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
 | `claude respawn` | --all / 会话 ID 互斥补全 |
-| `claude self-hosted-runner` | 全部运行时/生命周期/watchdog 选项 |
+| `claude self-hosted-runner` | setup/doctor/orchestrator 子命令 + 全部运行时/生命周期/watchdog 选项 |
 | `claude ultrareview` | --json / --no-post / --post / --timeout 选项 |
 
 ### 动态补全
@@ -107,7 +107,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1172 行，60 个函数）
+_claude                          # 单一补全文件（~1278 行，65 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）

@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.234
+# Version: 2.1.238
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -650,6 +650,7 @@ _claude_plugin() {
 _claude_plugin_eval_init() {
   _arguments \
   '--bare[write blank template instead of running interview]' \
+  '--eval-dir[directory below current dir to write cases into]:dir:_directories' \
   '(-h --help)'{-h,--help}'[display help]' \
   '(-i --interactive)'{-i,--interactive}'[run the authoring interview]' \
   '::name: '
@@ -663,6 +664,7 @@ _claude_plugin_eval() {
   '--ablation[run no-plugin baseline arm]:mode:(none with-without)' \
   '*--allow-tools[operator grant for gated tools]:tool (Tool(pattern\:*)): ' \
   '--case[filter cases by name glob]:glob: ' \
+  '--eval-dir[directory below the plugin that holds the eval cases]:dir:_directories' \
   '(-h --help)'{-h,--help}'[display help]' \
   '--json[print full run result as JSON]::path:_files' \
   '--judge-model[override LLM-grader model]:model:_claude_models' \
@@ -1013,11 +1015,68 @@ _claude_remote_control_cmd() {
   '(-h --help)'{-h,--help}'[display help]'
 }
 
-_claude_self_hosted_runner() {
+_claude_self_hosted_runner_cmds() {
+  local -a subcmds
+  subcmds=(
+    'setup:interactive wizard to set up a self-hosted runner'
+    'doctor:interactive wizard to diagnose a runner deployment'
+    'orchestrator:poll spawn-hints queue and spawn runners'
+  )
+  _describe 'self-hosted-runner command' subcmds
+}
+
+# setup/doctor are interactive wizards; extra args pass through to a Claude Code session
+_claude_self_hosted_runner_wizard() {
+  _arguments \
+  '(-h --help)'{-h,--help}'[display help]' \
+  '*::args: ' && return
+}
+
+_claude_self_hosted_runner_orchestrator() {
   _arguments \
   '--api-url[API base URL]:url:_urls' \
   '--environment-secret-file[path to environment secret file]:path:_files' \
+  '--hooks-dir[directory containing the spawn-runner hook]:dir:_directories' \
+  '--hook-concurrency[max spawn-runner hooks in parallel]:n [4]:_numbers' \
+  '--hook-timeout[SIGTERM the hook after seconds]:sec [60]:_numbers' \
+  '--expected-spawn-seconds[p99 boot time for spawned runners]:sec [120]:_numbers' \
+  '--min-idle[keep at least N idle slots free]:n:_numbers' \
+  '--scm-connector-host[GHES hostname to forward to]:host: ' \
+  '--scm-connector-id[ghe_configurations id for this org]:id: ' \
+  '--scm-connector-provider[provider slug]:slug [ghe]: ' \
+  '--scm-connector-ca-file[extra CA bundle (PEM) for TLS]:path:_files' \
+  '--scm-connector-host-rewrite[redirect TCP connect while keeping Host/SNI]:from\=to: ' \
+  '--health-port[port for /healthz listener]:port [8080]:_numbers' \
+  '--log-level[log level]:level:(info debug)' \
+  '--debug-dir[DEV ONLY - write work-order JWTs to disk]:path:_files' \
+  '(-h --help)'{-h,--help}'[display help]'
+}
+
+_claude_self_hosted_runner() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  if (( CURRENT > 2 )); then
+    case "$words[2]" in
+      setup|doctor|orchestrator)
+        curcontext="${curcontext%:*:*}:claude-self-hosted-runner:"
+        (( CURRENT-- ))
+        shift words
+        case "$words[1]" in
+          setup|doctor) _claude_self_hosted_runner_wizard "$@" && return ;;
+          orchestrator) _claude_self_hosted_runner_orchestrator "$@" && return ;;
+        esac
+        return
+      ;;
+    esac
+  fi
+
+  _arguments -C \
+  '--api-url[API base URL]:url:_urls' \
+  '--environment-secret-file[path to environment secret file]:path:_files' \
   '--lock-to-account[lock runner to a single account at registration]:id: ' \
+  '--proxy-authorization-command[command whose stdout is the Proxy-Authorization header value]:command: ' \
+  '--proxy-authorization-file[read Proxy-Authorization header value from this file]:path:_files' \
   '--capacity[max concurrent sessions]:n [1]:_numbers' \
   '--base-dir[base directory for repo checkouts]:dir:_directories' \
   '--exec-path[binary to spawn for child sessions]:path:_files' \
@@ -1038,11 +1097,24 @@ _claude_self_hosted_runner() {
   '--exit-if-unused-min[exit if never assigned work]:min: ' \
   '--drain-grace-sec[keep polling queue after sessions finish]:sec [0]:_numbers' \
   '--retire-at[retire at absolute Unix timestamp]:epoch: ' \
+  '--defer-shutdown-max-min[delay shutdown after first SIGTERM]:min: ' \
   '--release-idle-session-min[release session after idle minutes]:min: ' \
   '--startup-timeout-min[release if child init hangs]:min [15]:_numbers' \
   '--kill-session-after-min[SIGTERM session after wall-clock minutes]:min: ' \
   '--debug-token-dir[DEBUG ONLY - write live tokens to disk]:path:_files' \
-  '(-h --help)'{-h,--help}'[display help]'
+  '(-h --help)'{-h,--help}'[display help]' \
+  '1: :_claude_self_hosted_runner_cmds' \
+  '*:: :->subargs' \
+  && return
+
+  case "$state" in
+    subargs)
+      case "$line[1]" in
+        setup|doctor) _claude_self_hosted_runner_wizard "$@" && return ;;
+        orchestrator) _claude_self_hosted_runner_orchestrator "$@" && return ;;
+      esac
+    ;;
+  esac
 }
 
 _claude() {
