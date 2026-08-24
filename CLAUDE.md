@@ -17,7 +17,6 @@ zsh -n _claude && shellcheck -x -o all _claude && rm -f ~/.zcompdump*; exec zsh 
 ## 架构与风格
 
 - `_claude` 为单文件自包含架构，无外部依赖，直接放入 `$fpath` 即可
-- 补全函数命名：`_claude` → `_claude_<group>` → `_claude_<group>_<sub>` 三级对应 CLI 命令层级
 - 代码块语言标识统一用 `shell`，不用 `zsh`
 
 ## Zsh 陷阱
@@ -171,24 +170,3 @@ _cmd() {
 ## 更新补全脚本
 
 `.claude/commands/update-completions.md` — 可复用提示词，自动对比 CLI help 输出与系统工具列表，覆盖命令/选项缺失、工具名称遗漏、可重复选项 `*` 前缀，完成后更新 `_claude` 头部 `# Version:` 行。
-
-## 子命令补全覆盖
-
-| 命令 | 对应函数 | 补全/选项 |
-| --- | --- | --- |
-| `agents` | `_claude_agents` | `--model` `--effort` `--permission-mode` 等 |
-| `attach`/`kill`/`stop`/`rm`/`logs` | `_claude_attach` | 会话 ID，含名称/状态 |
-| `auth` | `_claude_auth` + `_claude_auth_cmds` | `login/logout/status`；`login --console/--sso` |
-| `auto-mode` | `_claude_auto_mode` + `_claude_auto_mode_cmds` | `config/critique/defaults`；`critique --model` |
-| `daemon` | `_claude_daemon` + `_claude_daemon_cmds` | `logs/run/status/stop/uninstall`；`run --json-path/--log-file` |
-| `doctor`/`setup-token`/`update`/`upgrade` | `_claude_help_opts` | 仅 `-h/--help` |
-| `gateway` | `_claude_gateway` | `--config` 路径补全 |
-| `import` | `_claude_import` | `codex/gemini` 来源；`--dry-run` `--yes` |
-| `install` | `_claude_install` | `stable/latest/version` |
-| `mcp` | `_claude_mcp` + `_claude_mcp_cmds` | `add/get/remove/list/serve/...`；transport/scope/headers；server 缓存 1h |
-| `plugin(s)` | `_claude_plugin` + `_claude_plugin_cmds` | `eval/init` 等 + 三层 `marketplace` |
-| `project` | `_claude_project` + `_claude_project_cmds` | `purge --all` `--dry-run` 路径补全 |
-| `remote-control` | `_claude_remote_control_cmd` | `--name`/前缀选项 |
-| `respawn` | `_claude_respawn_cmd` | `--all` 或 session ID 互斥 |
-| `self-hosted-runner` | `_claude_self_hosted_runner` + `_claude_self_hosted_runner_orchestrator` | `setup`/`doctor`/`orchestrator` 子命令 + 连接/运行时/watchdog 全部选项 |
-| `ultrareview` | `_claude_ultrareview` | `--json` `--no-post` `--post` `--timeout` |
