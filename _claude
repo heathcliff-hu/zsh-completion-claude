@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.238
+# Version: 2.1.241
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -1227,9 +1227,9 @@ _claude() {
     '--teammate-mode[agent team display mode]:mode:(auto in-process iterm2 tmux)'
     '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
-    '--cloud[create cloud session or attach by session ID/URL]:description: '
+    '--cloud[create cloud session or attach by session ID/URL]::description: '
     '--remote[deprecated alias for --cloud]:task description: '
-    '--teleport[resume web session in local terminal]'
+    '--teleport[resume web session in local terminal]::session: '
     '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
     '--settings[path to settings JSON file or JSON string]:file or json: '
     '--exclude-dynamic-system-prompt-sections[move per-machine sections to first user message]'
