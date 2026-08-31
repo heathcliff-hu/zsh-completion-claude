@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.241
+# Version: 2.1.251
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -76,6 +76,7 @@ _claude_tool_names_impl() {
     'EnterPlanMode' 'EnterWorktree' 'ExitPlanMode' 'ExitWorktree' 'Skill'
     'CronCreate' 'CronDelete' 'CronList'
     'ScheduleWakeup' 'Workflow'
+    'ListAgents'
     'ListMcpResourcesTool' 'ReadMcpResourceTool'
     'mcp__*'
   )
@@ -416,6 +417,7 @@ _claude_agents() {
   '*--mcp-config[MCP server configuration for dispatched sessions]:config: ' \
   '--model[default model for dispatched sessions]:model:_claude_models' \
   '--permission-mode[default permission mode for dispatched sessions]:mode:(acceptEdits auto bypassPermissions dontAsk manual plan)' \
+  '--restricted[start dispatched sessions in restricted mode]' \
   '*--plugin-dir[load plugins from directory for agent view and dispatched sessions]:path:_cmd_plugin_dir' \
   '--setting-sources[comma-separated setting sources]: :_claude_setting_sources' \
   '--settings[settings file or JSON for agent view and dispatched sessions]:file or json: ' \
@@ -670,6 +672,7 @@ _claude_plugin_eval() {
   '--judge-model[override LLM-grader model]:model:_claude_models' \
   '--keep-temp[preserve scaffold dirs for debugging]' \
   '--max-cost-usd[hard cost ceiling]:usd: ' \
+  '--mocks[mock stand-ins for MCP servers from <eval dir>/mocks/]:mode:(record off)' \
   '--model[override model for all cases]:model:_claude_models' \
   '--no-publish[keep the HTML report local; skip publishing to claude.ai]' \
   '--no-scaffold[skip scaffold_script]' \
@@ -1177,6 +1180,7 @@ _claude() {
     '*--disallowed-tools[comma/space-separated tool names to deny]: :_claude_tool_names'
     '--allow-dangerously-skip-permissions[enable bypassing all permission checks as option]'
     '--dangerously-skip-permissions[bypass all permission checks]'
+    '--restricted[restricted mode: remove code-running tools, WebFetch, and settings files]'
     '--permission-prompt-tool[specify MCP tool for permission prompts in non-interactive mode]:tool: '
     
     # System prompt / agents
