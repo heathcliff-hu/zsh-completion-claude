@@ -53,7 +53,7 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 ```
 
 - 带参选项用缺参调用 `claude --advisor` 验证更安全（报 `argument missing` 即存在，无副作用）
-- 历史记录（随版本变化，仅作参考）：曾验证有效的隐藏项有 `attach` `kill` `stop` `rm` `logs` `respawn` `remote-control` 命令、`--advisor` `--bg` `--init` `--init-only` `--maintenance` `--rc` `--cloud` `--remote` `--teleport` `--tmux` `--max-turns` `--autocompact` 等选项；已移除的有 `--exec` `--mcp-debug`
+- 历史记录（随版本变化，仅作参考）：曾验证有效的隐藏项有 `attach` `kill` `stop` `rm` `logs` `respawn` `daemon` 命令、`--advisor` `--bg` `--init` `--init-only` `--maintenance` `--rc` `--cloud` `--remote` `--teleport` `--tmux` `--max-turns` `--autocompact` 等选项；已移除的有 `--exec` `--mcp-debug`、`remote-control` 命令（2.1.259，`--remote-control` 选项保留）
 
 **副作用警告**：`--tmux`/`--worktree`/`--bg` 测试会实际创建 worktree、会话或后台进程，测试后必须清理（`git worktree remove`、`git worktree prune`、`claude kill <id>`）。验证耗时选项时加 `timeout 10` 防挂起。
 

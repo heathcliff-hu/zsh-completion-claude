@@ -30,11 +30,11 @@ claude() {
 
 ## 补全覆盖
 
-### 主命令 (24 个)
+### 主命令 (23 个)
 
-`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
+`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
-### 全局选项 (~95 个)
+### 全局选项 (~97 个)
 
 `--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--autocompact` `--forward-subagent-text` `--append-subagent-system-prompt` 等
 
@@ -56,7 +56,6 @@ claude() {
 | `claude plugin` | 17 个子命令 + 已安装插件名/市场名动态补全 |
 | `claude plugin marketplace` | add / list / remove / update 子命令 |
 | `claude project` | purge 子命令（--all/--dry-run/--interactive） |
-| `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
 | `claude respawn` | --all / 会话 ID 互斥补全 |
 | `claude self-hosted-runner` | setup/doctor/orchestrator 子命令 + 全部运行时/生命周期/watchdog 选项 |
 | `claude ultrareview` | --json / --no-post / --post / --timeout 选项 |

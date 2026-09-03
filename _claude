@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.251
+# Version: 2.1.259
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -47,9 +47,8 @@ _claude_cmd() {
     'plugin:manage Claude Code plugins'
     'plugins:manage Claude Code plugins'
     'project:manage Claude Code project state'
-    'remote-control:start Remote Control server'
     'respawn:restart background session'
-    'rm:remove background session from list'
+    'rm:delete a background session (and its worktree when safe)'
     'self-hosted-runner:run a self-hosted cloud runner'
     'setup-token:set up long-lived authentication token'
     'stop:stop background session'
@@ -384,7 +383,7 @@ _claude_ultrareview() {
   '--json[print raw bugs.json payload instead of formatted findings]' \
   '--no-post[do not post the findings to the PR (default)]' \
   '--post[post the finished review findings to the PR]' \
-  '--timeout[maximum minutes to wait for the review]:minutes [30]:_numbers' \
+  '--timeout[maximum minutes to wait for the review]:minutes [45]:_numbers' \
   '(-h --help)'{-h,--help}'[display help]' \
   '::target (PR number or base branch): '
 }
@@ -631,6 +630,7 @@ _claude_plugin() {
         ;;
         validate)
           _arguments \
+          '--json[output validation report as JSON]' \
           '--strict[treat warnings as errors (for CI)]' \
           '(-h --help)'{-h,--help}'[display help]' \
           '1:path:_files' && return
@@ -1011,13 +1011,6 @@ _claude_respawn_cmd() {
   '(--all)1:session id:_claude_bg_sessions'
 }
 
-_claude_remote_control_cmd() {
-  _arguments \
-  '--name[set session name for Remote Control]:name: ' \
-  '--remote-control-session-name-prefix[prefix for auto-generated session names]:prefix: ' \
-  '(-h --help)'{-h,--help}'[display help]'
-}
-
 _claude_self_hosted_runner_cmds() {
   local -a subcmds
   subcmds=(
@@ -1181,6 +1174,7 @@ _claude() {
     '--allow-dangerously-skip-permissions[enable bypassing all permission checks as option]'
     '--dangerously-skip-permissions[bypass all permission checks]'
     '--restricted[restricted mode: remove code-running tools, WebFetch, and settings files]'
+    '--permission-prompts[who answers permission prompts with --print]:target:(host none)'
     '--permission-prompt-tool[specify MCP tool for permission prompts in non-interactive mode]:tool: '
     
     # System prompt / agents
@@ -1189,6 +1183,7 @@ _claude() {
     '--append-system-prompt[append system prompt to default]:prompt: '
     '--append-system-prompt-file[append system prompt from file]:file:_files'
     '--append-subagent-system-prompt[append text to every subagent system prompt (--print only)]:prompt: '
+    '--system-prompt-snapshot[record system prompt once and reuse verbatim on resume]:value:(on off)'
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
     '*--betas[beta headers to include in API requests]:betas: '
@@ -1265,7 +1260,6 @@ _claude() {
         mcp)          _claude_mcp "$@" && ret=0 ;;
         plugin|plugins) _claude_plugin "$@" && ret=0 ;;
         project)      _claude_project "$@" && ret=0 ;;
-        remote-control) _claude_remote_control_cmd "$@" && ret=0 ;;
         respawn)      _claude_respawn_cmd "$@" && ret=0 ;;
         self-hosted-runner) _claude_self_hosted_runner "$@" && ret=0 ;;
         setup-token)  _claude_help_opts "$@" && ret=0 ;;
