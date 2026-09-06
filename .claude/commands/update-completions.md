@@ -28,7 +28,7 @@ claude --help
 
 ### 3. 子命令 `--help`
 
-逐一运行并对比对应函数（命令列表以 help 输出为准，函数映射见 CLAUDE.md「子命令补全覆盖」表）。
+逐一运行并对比对应函数（命令列表以 help 输出为准，函数映射见 README「补全覆盖」表）。
 
 ### 4. 深层子命令 `--help`
 
@@ -53,7 +53,7 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 ```
 
 - 带参选项用缺参调用 `claude --advisor` 验证更安全（报 `argument missing` 即存在，无副作用）
-- 历史记录（随版本变化，仅作参考）：曾验证有效的隐藏项有 `attach` `kill` `stop` `rm` `logs` `respawn` `daemon` 命令、`--advisor` `--bg` `--init` `--init-only` `--maintenance` `--rc` `--cloud` `--remote` `--teleport` `--tmux` `--max-turns` `--autocompact` 等选项；已移除的有 `--exec` `--mcp-debug`、`remote-control` 命令（2.1.259，`--remote-control` 选项保留）
+- 历史记录（随版本变化，仅作参考）：2.1.261 起 `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 已公开（进主 help），不再需要隐藏验证；仍隐藏需复验的只有 `daemon`、`self-hosted-runner` 命令与 `--advisor`/`--max-turns`/`--system-prompt-file`/`--append-subagent-system-prompt`/`--permission-prompt-tool`/`--channels`/`--ref`/`--teammate-mode`/`--init`/`--init-only`/`--maintenance`/`--rc`/`--remote` 等 help 未列选项（缺参 `claude --flag` 报 `argument missing` 即存在，无副作用）；已移除的有 `--exec` `--mcp-debug`、`remote-control` 命令（2.1.259，`--remote-control` 选项保留）
 
 **副作用警告**：`--tmux`/`--worktree`/`--bg` 测试会实际创建 worktree、会话或后台进程，测试后必须清理（`git worktree remove`、`git worktree prune`、`claude kill <id>`）。验证耗时选项时加 `timeout 10` 防挂起。
 
@@ -73,7 +73,7 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 - 新增工具 → 补充
 - 移除工具 → 删除
 - `mcp__*` 通配符保留
-- print 模式工具列表会裁剪交互工具（AskUserQuestion/plan 类），不可直接当删除依据；存在性用 `timeout 10 claude --tools <name> -p hi` 实测（无报错即存在）
+- print 模式工具列表会裁剪交互工具（AskUserQuestion/plan 类），会话主列表还会缺子代理专属工具（Glob/Grep 等），均不可直接当删除依据；存在性用 `timeout 10 claude --tools <name> --model haiku -p hi` 实测（无报错即存在）
 
 ---
 
@@ -94,6 +94,8 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 ```shell
 zsh -n _claude && shellcheck -x -o all _claude && rm -f ~/.zcompdump*; exec zsh
 ```
+
+Bash 工具内执行时拆掉 `exec zsh`（无 TTY 会挂起）：只跑前三步，提示用户在终端执行 `exec zsh`。
 
 ---
 
@@ -127,7 +129,7 @@ zpty 菜单输出读取不可靠时，回退 script 管道（`$PWD` 为仓库路
 
 ## 七、更新文档
 
-更新 CLAUDE.md「子命令补全覆盖」表（含函数映射）与 README.md（命令数、命令列表、选项列表）。
+更新 README.md（「补全覆盖」表、全局选项数、文件结构行数/函数数）。CLAUDE.md 无覆盖表，不需更新。
 
 ---
 
