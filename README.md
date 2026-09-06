@@ -34,9 +34,9 @@ claude() {
 
 `agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
-### 全局选项 (~97 个)
+### 全局选项 (~98 个)
 
-`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--autocompact` `--forward-subagent-text` `--append-subagent-system-prompt` 等
+`--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--autocompact` `--forward-subagent-text` `--append-subagent-system-prompt` `--append-subagent-system-prompt-file` 等
 
 ### 子命令详细补全
 
@@ -45,7 +45,8 @@ claude() {
 | `claude --model` | 从 settings 文件解析模型别名，显示来源文件 |
 | `claude --resume` | 列出 `~/.claude/projects/<slug>/` 下的会话，显示 displayName |
 | `claude agents` | 完整选项（--model、--effort、--permission-mode、--add-dir 等） |
-| `claude attach/kill/stop/rm/logs` | 后台会话 ID 补全（含名称、状态） |
+| `claude attach/kill/stop/logs` | 后台会话 ID 补全（含名称、状态） |
+| `claude rm` | 后台会话 ID + --discard-unpushed 选项 |
 | `claude auth` | login / logout / status 子命令及选项 |
 | `claude auto-mode` | config / critique / defaults / reset / help 子命令 |
 | `claude daemon` | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
@@ -106,7 +107,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1278 行，65 个函数）
+_claude                          # 单一补全文件（~1286 行，65 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）

@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.259
+# Version: 2.1.261
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -182,8 +182,8 @@ _claude_mcp_add() {
   '--client-secret[prompt for OAuth client secret]' \
   '*-e[set environment variables]:env (KEY=value)' \
   '*--env[set environment variables]:env (KEY=value)' \
-  '*-H[set WebSocket headers]:header' \
-  '*--header[set WebSocket headers]:header' \
+  '*-H[set headers for HTTP/SSE servers]:header' \
+  '*--header[set headers for HTTP/SSE servers]:header' \
   '(-h --help)'{-h,--help}'[display help]' \
   '(-s --scope)'{-s,--scope}'[configuration scope]:scope:(local user project)' \
   '(-t --transport)'{-t,--transport}'[transport type]:transport:(stdio sse http)' \
@@ -732,6 +732,7 @@ _claude_plugin_marketplace() {
       case "$line[1]" in
         add)
           _arguments \
+          '--claudeai[add the marketplace of this name that claude.ai hosts for you]' \
           '--scope[where to declare the marketplace]:scope:(user project local)' \
           '*--sparse[limit checkout to specific directories]:paths: ' \
           '(-h --help)'{-h,--help}'[display help]' \
@@ -1004,6 +1005,13 @@ _claude_attach() {
   '1:session id:_claude_bg_sessions'
 }
 
+_claude_rm() {
+  _arguments \
+  '--discard-unpushed[also discard the worktree unpushed commits (value reported by a previous rm)]:commit@worktree: ' \
+  '(-h --help)'{-h,--help}'[display help]' \
+  '1:session id:_claude_bg_sessions'
+}
+
 _claude_respawn_cmd() {
   _arguments \
   '(1)--all[respawn every running session]' \
@@ -1183,6 +1191,7 @@ _claude() {
     '--append-system-prompt[append system prompt to default]:prompt: '
     '--append-system-prompt-file[append system prompt from file]:file:_files'
     '--append-subagent-system-prompt[append text to every subagent system prompt (--print only)]:prompt: '
+    '--append-subagent-system-prompt-file[append text from file to every subagent system prompt (--print only)]:file:_files'
     '--system-prompt-snapshot[record system prompt once and reuse verbatim on resume]:value:(on off)'
     '--agent[agent for current session]:agent: '
     '--agents[json object defining custom agents]:json: '
@@ -1256,7 +1265,8 @@ _claude() {
         gateway)      _claude_gateway "$@" && ret=0 ;;
         import)       _claude_import "$@" && ret=0 ;;
         install)      _claude_install "$@" && ret=0 ;;
-        attach|kill|stop|rm|logs) _claude_attach "$@" && ret=0 ;;
+        attach|kill|stop|logs) _claude_attach "$@" && ret=0 ;;
+        rm)           _claude_rm "$@" && ret=0 ;;
         mcp)          _claude_mcp "$@" && ret=0 ;;
         plugin|plugins) _claude_plugin "$@" && ret=0 ;;
         project)      _claude_project "$@" && ret=0 ;;
