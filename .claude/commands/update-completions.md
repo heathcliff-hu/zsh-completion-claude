@@ -48,12 +48,15 @@ claude --help
 以下不在 `claude --help` 输出中，属手动保留，需验证仍有效：
 
 ```shell
-claude attach --help    # 隐藏命令：能显示 Usage 即存在
-claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需从补全删除
+claude daemon --help      # 隐藏命令：能显示 Usage/自有 help 即存在
+claude --exec x -p hi     # 已移除选项：报 unknown option 即已移除，需从补全删除
+claude --advisor          # 带参选项：缺参报 argument missing 即存在（无副作用）
+claude --init --zzz-nope  # 布尔/可选参选项：报 unknown option '--zzz-nope' 即存在；报 unknown option '--init' 即已移除
 ```
 
 - 带参选项用缺参调用 `claude --advisor` 验证更安全（报 `argument missing` 即存在，无副作用）
-- 历史记录（随版本变化，仅作参考）：2.1.261 起 `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 已公开（进主 help），不再需要隐藏验证；仍隐藏需复验的只有 `daemon`、`self-hosted-runner` 命令与 `--advisor`/`--max-turns`/`--system-prompt-file`/`--append-subagent-system-prompt`/`--permission-prompt-tool`/`--channels`/`--ref`/`--teammate-mode`/`--init`/`--init-only`/`--maintenance`/`--rc`/`--remote` 等 help 未列选项（缺参 `claude --flag` 报 `argument missing` 即存在，无副作用）；已移除的有 `--exec` `--mcp-debug`、`remote-control` 命令（2.1.259，`--remote-control` 选项保留）
+- 布尔/可选参选项缺参调用会真实启动会话，改用哨兵法：`claude --flag --zzz-nope`，解析错误早于会话启动，无副作用
+- 历史记录（随版本变化，仅作参考）：2.1.261 起 `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 已公开（进主 help），不再需要隐藏验证；仍隐藏需复验的有 `daemon`、`self-hosted-runner` 命令与 `--advisor`/`--max-turns`/`--system-prompt-file`/`--append-subagent-system-prompt`/`--permission-prompt-tool`/`--channels`/`--ref`/`--teammate-mode`/`--init`/`--init-only`/`--maintenance`/`--rc`/`--remote` 等 help 未列选项；`remote-control` 命令（别名 rc/sync/bridge，二进制内 CLI 路由可见）2.1.259 移除后于 2.1.274 回归，鉴权检查先于参数解析，选项只能靠二进制字符串核验；已移除的有 `--exec` `--mcp-debug`（2.1.259）
 
 **副作用警告**：`--tmux`/`--worktree`/`--bg` 测试会实际创建 worktree、会话或后台进程，测试后必须清理（`git worktree remove`、`git worktree prune`、`claude kill <id>`）。验证耗时选项时加 `timeout 10` 防挂起。
 
@@ -62,7 +65,8 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 - 选项缺失 → 补充
 - 参数必填/可选与 `[]`/`<>` 标注不一致 → 修正 `1:`/`::`
 - 候选列表（如 `--scope` 的 user/project/local）不完整 → 对齐 help 描述
-- 可重复选项漏标 `*` → 修复
+- 可重复选项漏标 `*` → 修复（help 报错文案中 `<x...>` 即可变参数信号）
+- help 里以 `[env: X]` 单独成行的条目可能没有对应 CLI flag（2.1.274 的 `SELF_HOSTED_RUNNER_HOST_CONFIG_DIR` 实测 `--host-config-dir` 报 unknown flag），加补全前必须缺参实测
 
 ---
 
@@ -73,7 +77,15 @@ claude --exec x -p hi   # 隐藏选项：报 unknown option 即已移除，需�
 - 新增工具 → 补充
 - 移除工具 → 删除
 - `mcp__*` 通配符保留
-- print 模式工具列表会裁剪交互工具（AskUserQuestion/plan 类），会话主列表还会缺子代理专属工具（Glob/Grep 等），均不可直接当删除依据；存在性用 `timeout 10 claude --tools <name> --model haiku -p hi` 实测（无报错即存在）
+- print 模式工具列表会裁剪交互工具（AskUserQuestion/plan 类），会话主列表还会缺子代理专属工具（Glob/Grep 等），均不可直接当删除依据
+- 存在性核验用二进制字符串（`--tools` 已证实不校验：`claude --tools BogusTool999 -p hi` exit 0 正常跑完，不可作判据）：
+
+  ```shell
+  bin=$(whence -p claude)   # 绕过 zsh 函数包装取真实路径
+  grep -ac '\bToolName\b' "$bin"   # 非 0 即注册在案（字符串命中可能是遗留兼容名，仅缺失才判定删除）
+  ```
+
+- macOS `strings` 依赖 Xcode CLT 缺失时不可用，直接 `grep -a` 扫二进制
 
 ---
 
