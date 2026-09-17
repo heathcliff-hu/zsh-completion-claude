@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.261
+# Version: 2.1.274
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -47,6 +47,7 @@ _claude_cmd() {
     'plugin:manage Claude Code plugins'
     'plugins:manage Claude Code plugins'
     'project:manage Claude Code project state'
+    'remote-control:start Remote Control server'
     'respawn:restart background session'
     'rm:delete a background session (and its worktree when safe)'
     'self-hosted-runner:run a self-hosted cloud runner'
@@ -399,7 +400,7 @@ _claude_import() {
   '--dry-run[show what would be imported without writing]' \
   '--yes[skip the interactive picker]::digest: ' \
   '(-h --help)'{-h,--help}'[display help]' \
-  '::source (codex or gemini):(codex gemini)'
+  '::source (codex, gemini, or cursor):(codex gemini cursor)'
 }
 
 _claude_agents() {
@@ -561,12 +562,14 @@ _claude_plugin() {
         disable)
           _arguments \
           '(-a --all)'{-a,--all}'[disable all enabled plugins]' \
+          '--json[print one machine-readable result line on stdout]' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '(-h --help)'{-h,--help}'[display help]' \
           '::plugin name:_claude_plugins' && return
         ;;
         enable)
           _arguments \
+          '--json[print one machine-readable result line on stdout]' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '(-h --help)'{-h,--help}'[display help]' \
           '1:plugin name:_claude_plugins' && return
@@ -583,7 +586,9 @@ _claude_plugin() {
         ;;
         install|i)
           _arguments \
+          '--accept-command[accept the marketplace-declared command with this sha256 (from a previous --json run)]:sha256: ' \
           '*--config[set a userConfig option]:key=value: ' \
+          '--json[print one machine-readable result line on stdout]' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '(-y --yes)'{-y,--yes}'[accept marketplace-declared command without confirmation]' \
           '(-h --help)'{-h,--help}'[display help]' \
@@ -614,8 +619,9 @@ _claude_plugin() {
         ;;
         uninstall|remove)
           _arguments \
+          '(--prune)--json[print one machine-readable result line on stdout (not with --prune)]' \
           '--keep-data[preserve plugin persistent data directory]' \
-          '--prune[also remove auto-installed dependencies no longer needed]' \
+          '(--json)--prune[also remove auto-installed dependencies no longer needed]' \
           '(-s --scope)'{-s,--scope}'[uninstall from scope]:scope:(user project local)' \
           '(-y --yes)'{-y,--yes}'[skip --prune confirmation prompt]' \
           '(-h --help)'{-h,--help}'[display help]' \
@@ -623,6 +629,8 @@ _claude_plugin() {
         ;;
         update)
           _arguments \
+          '--accept-command[accept the marketplace-declared command with this sha256 (from a previous --json run)]:sha256: ' \
+          '--json[print one machine-readable result line on stdout]' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local managed)' \
           '(-y --yes)'{-y,--yes}'[accept changed command without confirmation]' \
           '(-h --help)'{-h,--help}'[display help]' \
@@ -664,8 +672,10 @@ _claude_plugin_eval() {
 
   _arguments -C \
   '--ablation[run no-plugin baseline arm]:mode:(none with-without)' \
+  '--allow-real-servers[with --mocks record, also start real MCP servers that have no mock]' \
   '*--allow-tools[operator grant for gated tools]:tool (Tool(pattern\:*)): ' \
   '--case[filter cases by name glob]:glob: ' \
+  '(-j --concurrency)'{-j,--concurrency}'[run up to N agent runs at once (1-8)]:n [1]:_numbers' \
   '--eval-dir[directory below the plugin that holds the eval cases]:dir:_directories' \
   '(-h --help)'{-h,--help}'[display help]' \
   '--json[print full run result as JSON]::path:_files' \
@@ -683,6 +693,7 @@ _claude_plugin_eval() {
   '--scaffold[run scaffold_script]' \
   '*--tag[filter cases by tag]:tag: ' \
   '--threshold[exit 1 if any case score below threshold]:0..1: ' \
+  '--trust-plugin[assert trust in the plugin code and eval suite, skip the first-run trust prompt]' \
   '--verbose[stream the trace as it runs]' \
   '1: :->subcmds_or_target' \
   '*:: :->subargs' \
@@ -1008,6 +1019,7 @@ _claude_attach() {
 _claude_rm() {
   _arguments \
   '--discard-unpushed[also discard the worktree unpushed commits (value reported by a previous rm)]:commit@worktree: ' \
+  '--force-remove-worktree[delete the worktree dir even though the WorktreeRemove hook or git could not remove it]:worktree-id: ' \
   '(-h --help)'{-h,--help}'[display help]' \
   '1:session id:_claude_bg_sessions'
 }
@@ -1017,6 +1029,13 @@ _claude_respawn_cmd() {
   '(1)--all[respawn every running session]' \
   '(-h --help)'{-h,--help}'[display help]' \
   '(--all)1:session id:_claude_bg_sessions'
+}
+
+_claude_remote_control_cmd() {
+  _arguments \
+  '--name[set session name for Remote Control]:name: ' \
+  '--remote-control-session-name-prefix[prefix for auto-generated session names]:prefix: ' \
+  '(-h --help)'{-h,--help}'[display help]'
 }
 
 _claude_self_hosted_runner_cmds() {
@@ -1079,6 +1098,7 @@ _claude_self_hosted_runner() {
   '--api-url[API base URL]:url:_urls' \
   '--environment-secret-file[path to environment secret file]:path:_files' \
   '--lock-to-account[lock runner to a single account at registration]:id: ' \
+  '--client-label[observability label sent at registration]:label [hostname]: ' \
   '--proxy-authorization-command[command whose stdout is the Proxy-Authorization header value]:command: ' \
   '--proxy-authorization-file[read Proxy-Authorization header value from this file]:path:_files' \
   '--capacity[max concurrent sessions]:n [1]:_numbers' \
@@ -1088,13 +1108,16 @@ _claude_self_hosted_runner() {
   '--session-stop-grace-sec[grace period before force-killing session process]:sec [5]:_numbers' \
   '--post-session-hook-timeout-sec[SIGTERM budget for post-session hook]:sec [60]:_numbers' \
   '--drain-wait-sec[wait for in-flight turns before SIGTERM]:sec [0]:_numbers' \
+  '--drain-marker-file[host announces graceful drain by writing this marker file (telemetry only)]:path:_files' \
   '*--git-ssh-rewrite[rewrite https URLs to git\@ host]:host: ' \
   '*--git-host-rewrite[rewrite https URLs to another host]:from\=to: ' \
   '--use-anthropic-git-proxy[clone via Anthropic git proxy]' \
   '--configure-git[set global git identity and commit signing]' \
   '--push-outcome-on-release[push tracked outcome branches before deleting]' \
   '--trust-workspace[seed persisted trust for session repo paths]::bool:(true false)' \
+  '--remove-session-state[remove per-session state under <base-dir>/_sessions/ when a session ends]::bool:(true false)' \
   '--confine-repo-settings[repo-committed-settings confine guard]:mode:(warn enforce off)' \
+  '--host-config-snapshot[where the startup snapshot of the host config dir is held]:mode:(disk memory)' \
   '--health-port[port for /healthz listener]:port [8080]:_numbers' \
   '--log-level[log level]:level:(info debug)' \
   '--log-file[tee runner logs to file]:path:_files' \
@@ -1208,7 +1231,7 @@ _claude() {
     '*--mcp-config[load MCP servers from JSON files/strings]:config: '
     '--strict-mcp-config[only use MCP servers from --mcp-config]'
     '*--channels[MCP server channels to listen on]:channel (plugin\:name@marketplace): '
-    '--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
+    '*--dangerously-load-development-channels[enable dev channels not on allowlist]:channel: '
     '--environment[create cloud session on self-hosted environment]:id (ccpool_...): ' \
     '--ref[git ref to use for cloud environment]:ref: '
 
@@ -1236,7 +1259,7 @@ _claude() {
     '(--rc --remote-control)'{--rc,--remote-control}'[start interactive session with Remote Control enabled]::name: '
     '--remote-control-session-name-prefix[prefix for auto-generated RC session names]:prefix: '
     '--cloud[create cloud session or attach by session ID/URL]::description: '
-    '--remote[deprecated alias for --cloud]:task description: '
+    '--remote[deprecated alias for --cloud]::description: '
     '--teleport[resume web session in local terminal]::session: '
     '--setting-sources[comma-separated setting sources]: :_claude_setting_sources'
     '--settings[path to settings JSON file or JSON string]:file or json: '
@@ -1270,6 +1293,7 @@ _claude() {
         mcp)          _claude_mcp "$@" && ret=0 ;;
         plugin|plugins) _claude_plugin "$@" && ret=0 ;;
         project)      _claude_project "$@" && ret=0 ;;
+        remote-control) _claude_remote_control_cmd "$@" && ret=0 ;;
         respawn)      _claude_respawn_cmd "$@" && ret=0 ;;
         self-hosted-runner) _claude_self_hosted_runner "$@" && ret=0 ;;
         setup-token)  _claude_help_opts "$@" && ret=0 ;;

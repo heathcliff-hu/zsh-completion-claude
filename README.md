@@ -30,11 +30,11 @@ claude() {
 
 ## 补全覆盖
 
-### 主命令 (23 个)
+### 主命令 (24 个)
 
-`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
+`agents` `attach` `auth` `auto-mode` `daemon` `doctor` `gateway` `import` `install` `kill` `logs` `mcp` `plugin` `plugins` `project` `remote-control` `respawn` `rm` `self-hosted-runner` `setup-token` `stop` `ultrareview` `update` `upgrade`
 
-### 全局选项 (~98 个)
+### 全局选项 (~84 个)
 
 `--model` `--resume` `--print` `--continue` `--debug` `--verbose` `--worktree` `--permission-mode` `--mcp-config` `--system-prompt` `--agent` `--advisor` `--bg` `--autocompact` `--forward-subagent-text` `--append-subagent-system-prompt` `--append-subagent-system-prompt-file` 等
 
@@ -46,12 +46,13 @@ claude() {
 | `claude --resume` | 列出 `~/.claude/projects/<slug>/` 下的会话，显示 displayName |
 | `claude agents` | 完整选项（--model、--effort、--permission-mode、--add-dir 等） |
 | `claude attach/kill/stop/logs` | 后台会话 ID 补全（含名称、状态） |
-| `claude rm` | 后台会话 ID + --discard-unpushed 选项 |
+| `claude rm` | 后台会话 ID + --discard-unpushed / --force-remove-worktree 选项 |
+| `claude remote-control` | --name / --remote-control-session-name-prefix 选项 |
 | `claude auth` | login / logout / status 子命令及选项 |
 | `claude auto-mode` | config / critique / defaults / reset / help 子命令 |
 | `claude daemon` | logs/run/status/stop/uninstall 子命令 + 配置文件/日志路径补全 |
 | `claude gateway` | --config 路径补全 |
-| `claude import` | codex / gemini 来源 + --dry-run / --yes |
+| `claude import` | codex / gemini / cursor 来源 + --dry-run / --yes |
 | `claude install` | stable / latest / 自定义版本号 |
 | `claude mcp` | 12 个子命令 + 服务器名动态补全（1h 缓存） |
 | `claude plugin` | 17 个子命令 + 已安装插件名/市场名动态补全 |
@@ -107,7 +108,7 @@ rm -f ~/.zcompdump*; exec zsh
 ## 文件结构
 
 ```shell
-_claude                          # 单一补全文件（~1286 行，65 个函数）
+_claude                          # 单一补全文件（~1310 行，66 个函数）
 CLAUDE.md                        # Claude Code 项目上下文
 README.md                        # 本文件
 .shellcheckrc                    # ShellCheck 配置（禁用 zsh glob qualifier 假阳性）
