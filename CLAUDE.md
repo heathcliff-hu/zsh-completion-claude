@@ -135,6 +135,7 @@ _cmd() {
 - `(a b)` — 固定列表，仅允许列出的值；`_describe` → 辅助函数 — 提供候选建议但允许自由输入（如 install target 选 stable/latest 外可输任意版本号）
 - `--help` 输出中 `...`（如 `<directories...>`）或 `(repeatable)` 标注的选项需加 `*--flag`，例：`'*--add-dir[additional directories]:directory:_directories'`
 - 数值：`'--timeout[specify timeout]: :_numbers -u minutes -d 30 timeout'` 或简写 `'::timeout (min) [30]:_numbers'`（message 中标注默认值）
+- CLI 的 deprecated 别名不写入补全（先例 `--pool-secret-file`、`--drain-wait-bg-tasks-sec`、`--enable-auto-mode`）：补全建议已废弃选项会误导用户
 
 ## 依赖守卫
 
@@ -158,9 +159,10 @@ _cmd() {
 - 以 `claude <cmd> --help` 实际输出为准；深层子命令（`auth login`/`plugin details` 等）`--help` 会回退输出主帮助，验证选项需单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
 - 深层子命令 help 只在 **for 循环** 中回落主 help（实测对照确认）；同一 Bash 调用内用 `;` 顺序直写多条 `claude <sub> <subsub> --help` 不回落。判断信号：输出含主选项（如 `--model`）即回落
 - 主选项完整性兜底：`comm -23 <(claude --help | grep -oE '\-\-[a-z][a-z0-9-]*' | sort -u) <(grep -oE '\-\-[a-z][a-z0-9-]*' _claude | sort -u)` 求差集，结果应为空或仅真新增（描述文本中的选项提及无干扰）
+- 选项对比用「全量聚合」而非逐函数：全部 `claude <cmd> --help` 输出重定向到同一文件，提取 `^\s+(-x, )?--` 后与整个 `_claude` 求差集。逐函数 diff 会因选项内联在父函数（`_claude_plugin` 内联各子命令选项，无 `_claude_plugin_tag` 函数）产生假阴性
 - 隐藏命令/选项不在 help 输出中：命令用 `claude <cmd> --help` 验证（能显示 Usage 即存在）；选项用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，从补全删除），带参选项用缺参 `claude --flag` 验证更安全（报 `argument missing` 即存在，无副作用）
 - 隐藏子命令同理会漏：如 `self-hosted-runner` 的 `setup`/`doctor`/`orchestrator`（主 help 无 Commands 段），交叉检查官方文档 + 逐一 `claude <cmd> <sub> --help` 实测
-- 布尔/可选参选项用哨兵法：`claude --flag --zzz-nope` — 报 `unknown option '--zzz-nope'` 即 flag 存在、报 `unknown option '--flag'` 即已移除；解析错误早于会话启动，无副作用（直接 `claude --flag -p hi` 会真实启动会话耗 token）
+- 布尔/可选参选项用哨兵法：`claude --flag --zzz-nope` — 报 `unknown option '--zzz-nope'` 即 flag 存在、报 `unknown option '--flag'` 即已移除；解析错误早于会话启动，无副作用（直接 `claude --flag -p hi` 会真实启动会话耗 token）。前提已对照验证：commander 报**首个**未知选项（`--bogus-aaa --zzz-nope` 报 `--bogus-aaa`）
 - 取真实二进制用 `whence -p claude`（用户 zsh 有 `claude()` 函数包装，`which` 返回函数体）
 - 工具存在性用二进制字符串核验：`grep -ac '\bToolName\b' "$(whence -p claude)"` — 非 0 即注册在案、仅缺失判定删除（`--tools` 对无效名不报错不可作判据；`strings` 依赖 Xcode CLT，缺失时用 `grep -a`）
 - `--tmux`/`--worktree`/`--bg` 验证会真实创建 worktree/会话，测试后必须 `git worktree remove` 清理，命令加 `timeout 10` 防挂起
@@ -169,6 +171,8 @@ _cmd() {
 ## CLI 参考来源
 
 `claude --help` 不列出所有选项。权威来源是[官方文档](https://code.claude.com/docs/en/cli-reference)，其 CLI flags 表包含 `--help` 中省略的选项（如 `--advisor`、`--bg`、`--init`、`--remote` 等）。更新补全时须同时检查两者，选项以文档为准，`--help` 仅作格式参考（`[]`/`<>` 标注 `::`/`:`）。文档也可能滞后（已移除的 `--exec` 仍列出），冲突时以实测为准。校验/警告文案同样滞后：`--effort` 无效值提示不含实际有效的 `ultracode`，删除候选项前须单独实测。
+
+版本差异优先查 changelog，避免大版本跳跃时盲目逐项 diff：`WebFetch https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` 按版本号拉取，patch 版本多数只含行为修复而非 CLI 面变更。
 
 ## 更新补全脚本
 
