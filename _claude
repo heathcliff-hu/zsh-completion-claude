@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.274
+# Version: 2.1.278
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -77,7 +77,7 @@ _claude_tool_names_impl() {
     'CronCreate' 'CronDelete' 'CronList'
     'ScheduleWakeup' 'Workflow'
     'ListAgents'
-    'ListMcpResourcesTool' 'ReadMcpResourceTool'
+    'ListMcpResourcesTool' 'ReadMcpResourceTool' 'WaitForMcpServers'
     'mcp__*'
   )
   _describe 'tool' tools
@@ -589,6 +589,7 @@ _claude_plugin() {
           '--accept-command[accept the marketplace-declared command with this sha256 (from a previous --json run)]:sha256: ' \
           '*--config[set a userConfig option]:key=value: ' \
           '--json[print one machine-readable result line on stdout]' \
+          '--registry[for a <package>@npm install, resolve and download from this npm registry instead of the configured one]:url: ' \
           '(-s --scope)'{-s,--scope}'[installation scope]:scope:(user project local)' \
           '(-y --yes)'{-y,--yes}'[accept marketplace-declared command without confirmation]' \
           '(-h --help)'{-h,--help}'[display help]' \
