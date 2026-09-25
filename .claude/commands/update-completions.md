@@ -58,6 +58,18 @@ claude --init --zzz-nope  # 布尔/可选参选项：报 unknown option '--zzz-n
 - 布尔/可选参选项缺参调用会真实启动会话，改用哨兵法：`claude --flag --zzz-nope`，解析错误早于会话启动，无副作用
 - 历史记录（随版本变化，仅作参考）：2.1.261 起 `attach`/`kill`/`stop`/`rm`/`logs`/`respawn` 已公开（进主 help），不再需要隐藏验证；仍隐藏需复验的有 `daemon`、`self-hosted-runner` 命令与 `--advisor`/`--max-turns`/`--system-prompt-file`/`--append-subagent-system-prompt`/`--permission-prompt-tool`/`--channels`/`--ref`/`--teammate-mode`/`--init`/`--init-only`/`--maintenance`/`--rc`/`--remote` 等 help 未列选项；`remote-control` 命令（别名 rc/sync/bridge，二进制内 CLI 路由可见）2.1.259 移除后于 2.1.274 回归，鉴权检查先于参数解析，选项只能靠二进制字符串核验；已移除的有 `--exec` `--mcp-debug`（2.1.259）
 
+**鉴权墙后的隐藏命令**（如 `remote-control`）：`claude <cmd> --help` 与哨兵法都会被鉴权检查拦截（报 `You must be logged in to use Remote Control`），普通字符串 grep 也找不到选项描述。可行方法是提取二进制内嵌的整块 help 文本——先定位标题锚点拿字节偏移，再按偏移切片：
+
+```shell
+bin=$(whence -p claude)
+off=$(grep -abo 'Remote Control - Control local sessions from claude.ai/code' "$bin" | head -1 | cut -d: -f1)
+tail -c +$((off-100)) "$bin" | head -c 6000 | LC_ALL=C tr -c '[:print:]\n' '\n' | LC_ALL=C grep -aE '^.{3,}$'
+```
+
+- `tr` 必须加 `LC_ALL=C`，否则报 `Illegal byte sequence`
+- 禁用 `grep -ao '.\{300\}pattern.\{300\}'` 这类大通配符——在二进制上会挂死超时，必须改用 `-abo` 偏移 + 切片
+- 提取到的 OPTIONS 段有时含运行时插值（如 `--permission-mode <mode> (...` 截断），候选值从主 help 的同名选项对齐（`acceptEdits auto bypassPermissions dontAsk manual plan`）
+
 **副作用警告**：`--tmux`/`--worktree`/`--bg` 测试会实际创建 worktree、会话或后台进程，测试后必须清理（`git worktree remove`、`git worktree prune`、`claude kill <id>`）。验证耗时选项时加 `timeout 10` 防挂起。
 
 ### 6. 对比要点

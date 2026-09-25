@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.278
+# Version: 2.1.282
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -1036,6 +1036,18 @@ _claude_remote_control_cmd() {
   _arguments \
   '--name[set session name for Remote Control]:name: ' \
   '--remote-control-session-name-prefix[prefix for auto-generated session names]:prefix: ' \
+  '(-c --continue)'{-c,--continue}'[reattach to last recorded session in this directory]' \
+  '--session-id[reattach to a specific session by ID]:uuid: ' \
+  '--permission-mode[permission mode for spawned sessions]:mode:(acceptEdits auto bypassPermissions dontAsk manual plan)' \
+  '--chrome[Claude in Chrome for spawned sessions]' \
+  '--no-chrome[disable Claude in Chrome for spawned sessions]' \
+  '(-d --debug)'{-d,--debug}'[enable debug mode with optional filter]::filter: ' \
+  '--debug-file[write debug logs to file]:path:_files' \
+  '(-v --verbose)'{-v,--verbose}'[enable verbose output]' \
+  '--spawn[spawn mode for sessions]:mode:(same-dir worktree session)' \
+  '--capacity[max concurrent sessions in worktree or same-dir mode]:count:_numbers' \
+  '--create-session-in-dir[pre-create a session in the current directory]' \
+  '--no-create-session-in-dir[do not pre-create a session in the current directory]' \
   '(-h --help)'{-h,--help}'[display help]'
 }
 
