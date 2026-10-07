@@ -159,7 +159,8 @@ _cmd() {
 - 以 `claude <cmd> --help` 实际输出为准；深层子命令（`auth login`/`plugin details` 等）`--help` 会回退输出主帮助，验证选项需单独执行 `claude <sub> <subsub> --flag`，不要附加 `-p hi`（误报 `unknown option`）
 - 深层子命令 help 只在 **for 循环** 中回落主 help（实测对照确认）；同一 Bash 调用内用 `;` 顺序直写多条 `claude <sub> <subsub> --help` 不回落。判断信号：输出含主选项（如 `--model`）即回落
 - 主选项完整性兜底：`comm -23 <(claude --help | grep -oE '\-\-[a-z][a-z0-9-]*' | sort -u) <(grep -oE '\-\-[a-z][a-z0-9-]*' _claude | sort -u)` 求差集，结果应为空或仅真新增（描述文本中的选项提及无干扰）
-- 选项对比用「全量聚合」而非逐函数：全部 `claude <cmd> --help` 输出重定向到同一文件，提取 `^\s+(-x, )?--` 后与整个 `_claude` 求差集。逐函数 diff 会因选项内联在父函数（`_claude_plugin` 内联各子命令选项，无 `_claude_plugin_tag` 函数）产生假阴性
+- 选项对比用「全量聚合」而非逐函数：全部 `claude <cmd> --help` 输出重定向到同一文件（**必须含 `claude --help` 本身**，漏掉会把主选项全判为缺失），提取 `^\s+(-x, )?--` 后与整个 `_claude` 求差集。逐函数 diff 会因选项内联在父函数（`_claude_plugin` 内联各子命令选项，无 `_claude_plugin_tag` 函数）产生假阴性
+- **聚合差集对同名选项假阴性** — 差集按「选项名是否出现在 `_claude` 任意位置」判定，`--json`/`--scope`/`--yes` 这类遍布多函数的通用名一旦某子命令漏加，聚合差集依然为空。故差集清零后仍须按子命令逐一目视核对 help 与补全函数（重点就是这些通用名）
 - 隐藏命令/选项不在 help 输出中：命令用 `claude <cmd> --help` 验证（能显示 Usage 即存在）；选项用 `claude --flag x -p hi` 实测（报 `unknown option` 即已移除，从补全删除），带参选项用缺参 `claude --flag` 验证更安全（报 `argument missing` 即存在，无副作用）
 - 隐藏子命令同理会漏：如 `self-hosted-runner` 的 `setup`/`doctor`/`orchestrator`（主 help 无 Commands 段），交叉检查官方文档 + 逐一 `claude <cmd> <sub> --help` 实测
 - 布尔/可选参选项用哨兵法：`claude --flag --zzz-nope` — 报 `unknown option '--zzz-nope'` 即 flag 存在、报 `unknown option '--flag'` 即已移除；解析错误早于会话启动，无副作用（直接 `claude --flag -p hi` 会真实启动会话耗 token）。前提已对照验证：commander 报**首个**未知选项（`--bogus-aaa --zzz-nope` 报 `--bogus-aaa`）
