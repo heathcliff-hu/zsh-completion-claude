@@ -5,7 +5,7 @@
 
 # ------------------------------------------------------------------------------
 # Zsh completion for claude (Claude Code CLI)
-# Version: 2.1.292
+# Version: 2.1.296
 #
 # Generated from `claude --help` output. Subcommands use basic completions
 # where nested help was not fetched. Rerun `claude <sub> --help` to
@@ -1152,6 +1152,7 @@ _claude_self_hosted_runner() {
   '--trust-workspace[seed persisted trust for session repo paths]::bool:(true false)' \
   '--remove-session-state[remove per-session state under <base-dir>/_sessions/ when a session ends]::bool:(true false)' \
   '--confine-repo-settings[repo-committed-settings confine guard]:mode:(warn enforce off)' \
+  '--server-auto-mode-lists[which auto mode classifier lists a session may receive in its launcher settings]:mode:(all no-allow none)' \
   '--host-config-snapshot[where the startup snapshot of the host config dir is held]:mode:(disk memory)' \
   '--health-port[port for /healthz listener]:port [8080]:_numbers' \
   '--log-level[log level]:level:(info debug)' \
